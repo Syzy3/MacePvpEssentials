@@ -30,14 +30,14 @@ public final class SettingsScreen extends Screen {
     private static final int BUTTON_WIDTH = 200;
     private static final int SECTION_WIDTH = 260;
     private static final int VISUALS_TOP = 40;
-    private static final int MACE_SLOTS_TOP = 112;
-    private static final int CROSSHAIR_TOP = 160;
+    private static final int MACE_SLOTS_TOP = 136;
+    private static final int CROSSHAIR_TOP = 184;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 30;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 228;
+    private static final int CONTENT_BOTTOM = 252;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -46,6 +46,7 @@ public final class SettingsScreen extends Screen {
     private final List<AbstractWidget> scrolled = new ArrayList<>();
     private final List<Integer> baseY = new ArrayList<>();
     private double scroll;
+    private Button totemButton;
 
     /** The Hitboxes choice on screen; read on open so the F3+F6 option is reflected. */
     private HitboxMode hitboxes;
@@ -119,6 +120,15 @@ public final class SettingsScreen extends Screen {
         shield.setTooltip(Tooltip.create(Component.literal("Shields are green when ready and red when disabled.")));
         addScrolled(shield);
 
+        // Visuals: Totem Background, under Shield Status
+        totemButton = Button.builder(totemLabel(), b -> {
+            nextTotem();
+            Config.save();
+            b.setMessage(totemLabel());
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 64, BUTTON_WIDTH, 20).build();
+        totemButton.setTooltip(Tooltip.create(Component.literal("Colors the slot of a totem. Right-click for a custom color.")));
+        addScrolled(totemButton);
+
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
                 .bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());
         setScroll(scroll);
@@ -162,8 +172,57 @@ public final class SettingsScreen extends Screen {
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
+    /** "Totem Background: Off", or the color name shown in its color. */
+    private static Component totemLabel() {
+        Config c = Config.get();
+        if (!c.totemBackground) {
+            return Component.literal("Totem Background: Off");
+        }
+        String name = c.totemCustom ? "Custom" : c.totemColor.label();
+        return Component.literal("Totem Background: ").append(Component.literal(name).withColor(c.totemRgb()));
+    }
+
+    /** Off -> Red -> Light Blue -> Dark Blue -> Green -> Purple -> Off. Custom goes to Off. */
+    private static void nextTotem() {
+        Config c = Config.get();
+        if (!c.totemBackground) {
+            c.totemBackground = true;
+            c.totemCustom = false;
+            c.totemColor = SlotColor.values()[0];
+        } else if (c.totemCustom || c.totemColor.ordinal() == SlotColor.values().length - 1) {
+            c.totemBackground = false;
+            c.totemCustom = false;
+        } else {
+            c.totemColor = c.totemColor.next();
+        }
+    }
+
+    /** The color picker's preview: a totem in a slot with the picked background. */
+    private static void drawTotemPreview(GuiGraphicsExtractor graphics, int x, int y, int size, int rgb) {
+        graphics.fill(x - 1, y - 1, x + size + 1, y + size + 1, 0xFF000000);
+        graphics.fill(x, y, x + size, y + size, 0xFF8B8B8B);
+        graphics.fill(x, y, x + size, y + size, 0x60000000 | rgb);
+        int icon = size - 12;
+        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TOTEM_TEXTURE,
+                x + 6, y + 6, 0.0F, 0.0F, icon, icon, 16, 16, 16, 16);
+    }
+
+    private static final net.minecraft.resources.Identifier TOTEM_TEXTURE =
+            net.minecraft.resources.Identifier.withDefaultNamespace("textures/item/totem_of_undying.png");
+
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 1 && totemButton != null && totemButton.visible && inList(event.y())
+                && totemButton.isMouseOver(event.x(), event.y())) {
+            Minecraft.getInstance().gui.setScreen(new ColorPickerScreen(this, "Totem Background",
+                    Config.get().totemRgb(), rgb -> {
+                        Config c = Config.get();
+                        c.totemCustomRgb = rgb;
+                        c.totemCustom = true;
+                        c.totemBackground = true;
+                    }, SettingsScreen::drawTotemPreview));
+            return true;
+        }
         // A setting partly scrolled behind the title or the Done button can't be clicked there.
         if (!inList(event.y())) {
             for (AbstractWidget w : scrolled) {

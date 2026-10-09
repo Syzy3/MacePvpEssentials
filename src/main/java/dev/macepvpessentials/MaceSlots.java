@@ -9,8 +9,8 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 /**
- * Colored slot backgrounds for Breach and Density maces, drawn behind the item in inventory
- * screens and the hotbar. Only maces are looked at, so other items cost one comparison.
+ * Colored slot backgrounds for Breach and Density maces and Totems of Undying, drawn behind the
+ * item in inventory screens and the hotbar. Other items cost two comparisons.
  */
 public final class MaceSlots {
 
@@ -39,6 +39,9 @@ public final class MaceSlots {
                 }
             }
             return 0;
+        }
+        if (stack.getItem() == Items.TOTEM_OF_UNDYING) {
+            return Config.get().totemSlotColor();
         }
         return 0;
     }

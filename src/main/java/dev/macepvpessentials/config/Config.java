@@ -23,7 +23,26 @@ public final class Config {
     public SlotColor breachColor = SlotColor.LIGHT_BLUE;
     public SlotColor densityColor = SlotColor.DARK_BLUE;
     public boolean shieldStatus = true;
+    /** Colored background behind Totems of Undying (off by default). */
+    public boolean totemBackground = false;
+    public SlotColor totemColor = SlotColor.GREEN;
+    /** True when the totem uses the color picked with right-click. */
+    public boolean totemCustom = false;
+    public int totemCustomRgb = 0xFFD24A;
     public dev.macepvpessentials.crosshair.CrosshairSettings crosshair = new dev.macepvpessentials.crosshair.CrosshairSettings();
+
+    /** The totem background as a slot fill (0 when off). */
+    public int totemSlotColor() {
+        if (!totemBackground) {
+            return 0;
+        }
+        return totemCustom ? (0x60000000 | (totemCustomRgb & 0xFFFFFF)) : totemColor.slotColor();
+    }
+
+    /** The totem background color without transparency, for labels. */
+    public int totemRgb() {
+        return totemCustom ? totemCustomRgb & 0xFFFFFF : totemColor.rgb();
+    }
 
     public static Config get() {
         return current;
@@ -46,6 +65,9 @@ public final class Config {
                 }
                 if (loaded.densityColor == null) {
                     loaded.densityColor = SlotColor.DARK_BLUE;
+                }
+                if (loaded.totemColor == null) {
+                    loaded.totemColor = SlotColor.GREEN;
                 }
                 if (loaded.crosshair == null) {
                     loaded.crosshair = new dev.macepvpessentials.crosshair.CrosshairSettings();

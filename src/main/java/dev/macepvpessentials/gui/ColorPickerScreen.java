@@ -16,6 +16,13 @@ public final class ColorPickerScreen extends Screen {
     private static final int PREVIEW = 76;
     private final Screen parent;
     private final java.util.function.IntConsumer onDone;
+    /** Draws the preview box; the crosshair preview unless told otherwise. */
+    private final Preview preview;
+
+    /** Draws a preview of the picked color in a {@code size} x {@code size} box at (x, y). */
+    public interface Preview {
+        void draw(GuiGraphicsExtractor graphics, int x, int y, int size, int rgb);
+    }
     private int red;
     private int green;
     private int blue;
@@ -31,7 +38,14 @@ public final class ColorPickerScreen extends Screen {
 
     /** Picks a color starting from {@code startRgb}; {@code onDone} gets it when Done is pressed. */
     public ColorPickerScreen(Screen parent, String title, int startRgb, java.util.function.IntConsumer onDone) {
+        this(parent, title, startRgb, onDone, (g, x, y, size, rgb) ->
+                CrosshairEditorScreen.drawPreview(g, Config.get().crosshair, x, y, size, size, rgb));
+    }
+
+    public ColorPickerScreen(Screen parent, String title, int startRgb, java.util.function.IntConsumer onDone,
+                             Preview preview) {
         super(Component.literal(title));
+        this.preview = preview;
         this.parent = parent;
         this.onDone = onDone;
         this.red = startRgb >> 16 & 255;
@@ -68,7 +82,7 @@ public final class ColorPickerScreen extends Screen {
         graphics.fill(x - 1, sy - 1, x + 150 + 1, sy + 17, -16777216);
         graphics.fill(x, sy, x + 150, sy + 16, -16777216 | this.rgb());
         graphics.text(this.font, String.format("#%06X", this.rgb()), x, sy + 22, -6250336, false);
-        CrosshairEditorScreen.drawPreview(graphics, Config.get().crosshair, x + 150 + 10, 34, 76, 76, this.rgb());
+        this.preview.draw(graphics, x + 150 + 10, 34, 76, this.rgb());
     }
 
     private void back() {
