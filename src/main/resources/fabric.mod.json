@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "id": "mace-pvp-essentials",
+  "version": "${version}",
+  "name": "Mace PvP Essentials",
+  "description": "Clean visuals and tools for mace PvP.",
+  "authors": [
+    "Syzy3"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/organization/kinetic"
+  },
+  "license": "All Rights Reserved",
+  "environment": "client",
+  "icon": "assets/mace-pvp-essentials/icon.png",
+  "entrypoints": {
+    "client": [
+      "dev.macepvpessentials.MacePvpEssentials"
+    ],
+    "modmenu": [
+      "dev.macepvpessentials.ModMenuIntegration"
+    ]
+  },
+  "mixins": [
+    "mace-pvp-essentials.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.3",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  },
+  "suggests": {
+    "modmenu": "*"
+  },
+  "custom": {
+    "kinetic": {
+      "settings": "dev.macepvpessentials.gui.SettingsScreen#open"
+    }
+  }
+}

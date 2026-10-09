@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.macepvpessentials.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "AbstractContainerScreenMixin",
+    "ClientPacketListenerMixin",
+    "DebugRendererMixin",
+    "EntityHitboxDebugRendererAccessor",
+    "HudMixin",
+    "ShieldSpecialRendererMixin",
+    "SpecialModelWrapperMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
