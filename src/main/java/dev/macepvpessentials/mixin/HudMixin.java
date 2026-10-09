@@ -44,22 +44,19 @@ public abstract class HudMixin {
                                              int x, int y, int width, int height, Operation<Void> original,
                                              GuiGraphicsExtractor g, DeltaTracker deltaTracker) {
         CrosshairSettings s = Config.get().crosshair;
+        if (!s.custom) {
+            // Default Crosshair is on: plain Minecraft crosshair, nothing added.
+            original.call(new Object[]{graphics, pipeline, sprite, x, y, width, height});
+            return;
+        }
+
         LocalPlayer player = Minecraft.getInstance().player;
         // Same center pixel as Minecraft's 15x15 crosshair.
         int cx = x + width / 2;
         int cy = y + height / 2;
         float cooldown = player == null ? -1f : CrosshairInfo.cooldown(player, deltaTracker.getGameTimeDeltaPartialTick(false));
         boolean elytra = player != null && CrosshairInfo.wearingElytra(player);
-        int rgb = s.rgb();
-        if (s.targetColor && CrosshairInfo.onPlayer()) {
-            boolean alreadyRed = (rgb >> 16 & 0xFF) > 180 && (rgb >> 8 & 0xFF) < 110 && (rgb & 0xFF) < 110;
-            rgb = alreadyRed ? 0xFFFFFF : 0xFF3B3B;
-        }
-        if (s.custom) {
-            CrosshairRenderer.draw(graphics, s, cx, cy, rgb, cooldown, elytra);
-        } else {
-            original.call(graphics, pipeline, sprite, x, y, width, height);
-            CrosshairRenderer.drawExtras(graphics, s, cx, cy, height / 2 + 1, rgb, cooldown, elytra);
-        }
+        int rgb = s.currentRgb(CrosshairInfo.onPlayer());
+        CrosshairRenderer.draw(graphics, s, cx, cy, rgb, cooldown, elytra);
     }
 }

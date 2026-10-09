@@ -77,10 +77,20 @@ public final class SettingsScreen extends Screen {
         density.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Density mace.")));
         addRenderableWidget(density);
 
-        // Crosshair
-        addRenderableWidget(Button.builder(Component.literal("Edit Crosshair..."),
+        // Crosshair: Default Crosshair on = Minecraft's own crosshair, so the editor is greyed out.
+        Button edit = Button.builder(Component.literal("Edit Crosshair..."),
                 b -> Minecraft.getInstance().gui.setScreen(new CrosshairEditorScreen(this)))
-                .bounds(this.width / 2 - BUTTON_WIDTH / 2, CROSSHAIR_TOP + 16, BUTTON_WIDTH, 20).build());
+                .bounds(this.width / 2 - BUTTON_WIDTH / 2, CROSSHAIR_TOP + 40, BUTTON_WIDTH, 20).build();
+        edit.active = Config.get().crosshair.custom;
+        Button defaultCrosshair = Button.builder(onOff("Default Crosshair", !Config.get().crosshair.custom), b -> {
+            Config.get().crosshair.custom = !Config.get().crosshair.custom;
+            Config.save();
+            b.setMessage(onOff("Default Crosshair", !Config.get().crosshair.custom));
+            edit.active = Config.get().crosshair.custom;
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, CROSSHAIR_TOP + 16, BUTTON_WIDTH, 20).build();
+        defaultCrosshair.setTooltip(Tooltip.create(Component.literal("Uses Minecraft's normal crosshair. Turn off to make your own.")));
+        addRenderableWidget(defaultCrosshair);
+        addRenderableWidget(edit);
 
         // Visuals: Shield Status, under Hitboxes
         Button shield = Button.builder(onOff("Shield Status", Config.get().shieldStatus), b -> {

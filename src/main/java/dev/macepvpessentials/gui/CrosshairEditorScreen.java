@@ -1,6 +1,7 @@
 package dev.macepvpessentials.gui;
 
 import dev.macepvpessentials.config.Config;
+import dev.macepvpessentials.crosshair.CrosshairColor;
 import dev.macepvpessentials.crosshair.CrosshairInfo;
 import dev.macepvpessentials.crosshair.CrosshairRenderer;
 import dev.macepvpessentials.crosshair.CrosshairSettings;
@@ -46,18 +47,24 @@ public final class CrosshairEditorScreen extends Screen {
         int col1 = this.left();
         int col2 = col1 + 108 + 4;
         CrosshairSettings s = this.s();
-        this.toggle(col1, row(0), "Custom", () -> s.custom, (v) -> s.custom = v, "Off uses Minecraft's crosshair.");
-        this.cycle(col1, row(1), "Style", (st) -> st.style.label(), (st) -> st.style = st.style.next());
-        this.colorButton = this.cycle(col1, row(2), "Color", (st) -> st.color.label(), (st) -> st.color = st.color.next());
+        // Column 1
+        this.cycle(col1, row(0), "Style", (st) -> st.style.label(), (st) -> st.style = st.style.next());
+        this.colorButton = this.cycle(col1, row(1), "Color", (st) -> st.color.label(), (st) -> st.color = st.color.next());
         this.colorButton.setTooltip(Tooltip.create(Component.literal("Right-click for a custom color.")));
-        this.addRenderableWidget(new IntSlider(col1, row(3), 108, 18, "Opacity", 10, 100, s.opacity, (v) -> v + "%", (v) -> s.opacity = Math.max(10, Math.round((float)v / 5.0F) * 5)));
-        this.toggle(col1, row(4), "Outline", () -> s.outline, (v) -> s.outline = v, (String)null);
-        this.toggle(col1, row(5), "Cooldown", () -> s.showCooldown, (v) -> s.showCooldown = v, "Shows your mace's attack charge, or the held item's cooldown.");
-        this.addRenderableWidget(new IntSlider(col2, row(0), 108, 18, "Length", 1, 12, s.length, Integer::toString, (v) -> s.length = v));
-        this.addRenderableWidget(new IntSlider(col2, row(1), 108, 18, "Thickness", 1, 6, s.thickness, Integer::toString, (v) -> s.thickness = v));
-        this.addRenderableWidget(new IntSlider(col2, row(2), 108, 18, "Gap", 0, 10, s.gap, Integer::toString, (v) -> s.gap = v));
+        this.addRenderableWidget(new IntSlider(col1, row(2), 108, 18, "Opacity", 10, 100, s.opacity, (v) -> v + "%", (v) -> { s.opacity = Math.max(10, Math.round((float)v / 5.0F) * 5); Config.save(); }));
+        this.toggle(col1, row(3), "Outline", () -> s.outline, (v) -> s.outline = v, (String)null);
+        this.toggle(col1, row(4), "Cooldown", () -> s.showCooldown, (v) -> s.showCooldown = v, "Shows your mace's attack charge, or the held item's cooldown.");
+        // Column 2
+        this.addRenderableWidget(new IntSlider(col2, row(0), 108, 18, "Length", 1, 12, s.length, Integer::toString, (v) -> { s.length = v; Config.save(); }));
+        this.addRenderableWidget(new IntSlider(col2, row(1), 108, 18, "Thickness", 1, 6, s.thickness, Integer::toString, (v) -> { s.thickness = v; Config.save(); }));
+        this.addRenderableWidget(new IntSlider(col2, row(2), 108, 18, "Gap", 0, 10, s.gap, Integer::toString, (v) -> { s.gap = v; Config.save(); }));
         this.toggle(col2, row(3), "Center Dot", () -> s.centerDot, (v) -> s.centerDot = v, (String)null);
-        this.toggle(col2, row(4), "Target Color", () -> s.targetColor, (v) -> s.targetColor = v, "Turns red while aiming at a player.");
+        Button target = (Button)this.addRenderableWidget(Button.builder(targetLabel(s), (btn) -> {
+            nextTarget(s);
+            Config.save();
+            btn.setMessage(targetLabel(s));
+        }).bounds(col2, row(4), 108, 18).build());
+        target.setTooltip(Tooltip.create(Component.literal("Crosshair color while aiming at a player.")));
         this.toggle(col2, row(5), "Elytra", () -> s.showElytra, (v) -> s.showElytra = v, "Shows an elytra icon while you wear one.");
         ElytraPreviewButton elytraButton = (ElytraPreviewButton)this.addRenderableWidget(new ElytraPreviewButton(col1 + 216 + 12 + 96 + 4, 30, 20, () -> simulateElytra, (b) -> simulateElytra = !simulateElytra));
         elytraButton.setTooltip(Tooltip.create(Component.literal("Shows the preview as if you're wearing an elytra.")));
@@ -71,6 +78,38 @@ public final class CrosshairEditorScreen extends Screen {
         this.addRenderableWidget(Button.builder(Component.literal("Done"), (b) -> this.onClose()).bounds(this.width / 2 + 2, this.height - 26, 100, 18).build());
     }
 
+    /** "Target: Off" or "Target: Red", with the color name shown in its color. */
+    private static Component targetLabel(CrosshairSettings s) {
+        if (!s.targetColor) {
+            return Component.literal("Target: Off");
+        }
+        return Component.literal("Target: ").append(Component.literal(s.target.label()).withColor(s.target.rgb() == 0x101010 ? 0x555555 : s.target.rgb()));
+    }
+
+    private static final CrosshairColor[] TARGETS = {
+            CrosshairColor.RED, CrosshairColor.GREEN, CrosshairColor.LIGHT_BLUE, CrosshairColor.DARK_BLUE,
+            CrosshairColor.YELLOW, CrosshairColor.PURPLE, CrosshairColor.PINK, CrosshairColor.WHITE, CrosshairColor.BLACK};
+
+    /** Off -> Red -> Green -> ... -> Black -> Off. */
+    private static void nextTarget(CrosshairSettings s) {
+        if (!s.targetColor) {
+            s.targetColor = true;
+            s.target = TARGETS[0];
+            return;
+        }
+        for (int i = 0; i < TARGETS.length; i++) {
+            if (TARGETS[i] == s.target) {
+                if (i + 1 < TARGETS.length) {
+                    s.target = TARGETS[i + 1];
+                } else {
+                    s.targetColor = false;
+                }
+                return;
+            }
+        }
+        s.target = TARGETS[0];
+    }
+
     private static int row(int i) {
         return 30 + i * 20;
     }
@@ -78,6 +117,7 @@ public final class CrosshairEditorScreen extends Screen {
     private void toggle(int x, int y, String name, BooleanSupplier get, Consumer<Boolean> set, String tooltip) {
         Button b = Button.builder(Component.literal(name + ": " + (get.getAsBoolean() ? "On" : "Off")), (btn) -> {
             set.accept(!get.getAsBoolean());
+            Config.save();
             btn.setMessage(Component.literal(name + ": " + (get.getAsBoolean() ? "On" : "Off")));
         }).bounds(x, y, 108, 18).build();
         if (tooltip != null) {
@@ -90,6 +130,7 @@ public final class CrosshairEditorScreen extends Screen {
     private Button cycle(int x, int y, String name, Function<CrosshairSettings, String> label, Consumer<CrosshairSettings> next) {
         return (Button)this.addRenderableWidget(Button.builder(Component.literal(name + ": " + (String)label.apply(this.s())), (btn) -> {
             next.accept(this.s());
+            Config.save();
             btn.setMessage(Component.literal(name + ": " + (String)label.apply(this.s())));
         }).bounds(x, y, 108, 18).build());
     }
