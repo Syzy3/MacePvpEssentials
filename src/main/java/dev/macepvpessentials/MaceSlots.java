@@ -32,10 +32,10 @@ public final class MaceSlots {
         if (stack.getItem() == Items.MACE) {
             for (Holder<Enchantment> enchantment : stack.getEnchantments().keySet()) {
                 if (enchantment.is(Enchantments.BREACH)) {
-                    return Config.get().breachColor.slotColor();
+                    return Config.get().breachSlotColor();
                 }
                 if (enchantment.is(Enchantments.DENSITY)) {
-                    return Config.get().densityColor.slotColor();
+                    return Config.get().densitySlotColor();
                 }
             }
             return 0;

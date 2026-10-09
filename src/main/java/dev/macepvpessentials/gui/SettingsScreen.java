@@ -47,6 +47,8 @@ public final class SettingsScreen extends Screen {
     private final List<Integer> baseY = new ArrayList<>();
     private double scroll;
     private Button totemButton;
+    private Button breachButton;
+    private Button densityButton;
 
     /** The Hitboxes choice on screen; read on open so the F3+F6 option is reflected. */
     private HitboxMode hitboxes;
@@ -80,21 +82,33 @@ public final class SettingsScreen extends Screen {
 
         // Mace Slots: two buttons side by side.
         int pairLeft = this.width / 2 - HALF_WIDTH - 2;
-        Button breach = Button.builder(colorLabel("Breach", Config.get().breachColor), b -> {
-            Config.get().breachColor = Config.get().breachColor.next();
+        Config c = Config.get();
+        breachButton = Button.builder(breachLabel(), b -> {
+            // From a custom color, go back to the first preset.
+            if (c.breachCustom) {
+                c.breachCustom = false;
+                c.breachColor = SlotColor.values()[0];
+            } else {
+                c.breachColor = c.breachColor.next();
+            }
             Config.save();
-            b.setMessage(colorLabel("Breach", Config.get().breachColor));
+            b.setMessage(breachLabel());
         }).bounds(pairLeft, MACE_SLOTS_TOP + 16, HALF_WIDTH, 20).build();
-        breach.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Breach mace.")));
-        addScrolled(breach);
+        breachButton.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Breach mace. Right-click for a custom color.")));
+        addScrolled(breachButton);
 
-        Button density = Button.builder(colorLabel("Density", Config.get().densityColor), b -> {
-            Config.get().densityColor = Config.get().densityColor.next();
+        densityButton = Button.builder(densityLabel(), b -> {
+            if (c.densityCustom) {
+                c.densityCustom = false;
+                c.densityColor = SlotColor.values()[0];
+            } else {
+                c.densityColor = c.densityColor.next();
+            }
             Config.save();
-            b.setMessage(colorLabel("Density", Config.get().densityColor));
+            b.setMessage(densityLabel());
         }).bounds(pairLeft + HALF_WIDTH + 4, MACE_SLOTS_TOP + 16, HALF_WIDTH, 20).build();
-        density.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Density mace.")));
-        addScrolled(density);
+        densityButton.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Density mace. Right-click for a custom color.")));
+        addScrolled(densityButton);
 
         // Crosshair: Default Crosshair on = Minecraft's own crosshair, so the editor is greyed out.
         Button edit = Button.builder(Component.literal("Edit Crosshair..."),
@@ -197,29 +211,78 @@ public final class SettingsScreen extends Screen {
         }
     }
 
-    /** The color picker's preview: a totem in a slot with the picked background. */
-    private static void drawTotemPreview(GuiGraphicsExtractor graphics, int x, int y, int size, int rgb) {
-        graphics.fill(x - 1, y - 1, x + size + 1, y + size + 1, 0xFF000000);
-        graphics.fill(x, y, x + size, y + size, 0xFF000000 | rgb);
-        int icon = size - 12;
-        graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TOTEM_TEXTURE,
-                x + 6, y + 6, 0.0F, 0.0F, icon, icon, 16, 16, 16, 16);
+    private static Component breachLabel() {
+        Config c = Config.get();
+        return c.breachCustom ? customLabel("Breach", c.breachCustomRgb) : colorLabel("Breach", c.breachColor);
+    }
+
+    private static Component densityLabel() {
+        Config c = Config.get();
+        return c.densityCustom ? customLabel("Density", c.densityCustomRgb) : colorLabel("Density", c.densityColor);
+    }
+
+    /** "Breach: Custom", with "Custom" shown in the picked color. */
+    private static Component customLabel(String name, int rgb) {
+        return Component.literal(name + ": ").append(Component.literal("Custom").withColor(rgb & 0xFFFFFF));
     }
 
     private static final net.minecraft.resources.Identifier TOTEM_TEXTURE =
             net.minecraft.resources.Identifier.withDefaultNamespace("textures/item/totem_of_undying.png");
+    private static final net.minecraft.resources.Identifier MACE_TEXTURE =
+            net.minecraft.resources.Identifier.withDefaultNamespace("textures/item/mace.png");
+
+    /**
+     * The color picker's preview: the item in an inventory slot with the picked background, at the
+     * picked opacity, so it looks like it will in game.
+     */
+    private static ColorPickerScreen.Preview slotPreview(net.minecraft.resources.Identifier texture) {
+        return (graphics, x, y, size, rgb, opacity) -> {
+            graphics.fill(x - 1, y - 1, x + size + 1, y + size + 1, 0xFF000000);
+            graphics.fill(x, y, x + size, y + size, 0xFF8B8B8B);
+            graphics.fill(x, y, x + size, y + size, Config.withOpacity(rgb, opacity));
+            int icon = size - 12;
+            graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, texture,
+                    x + 6, y + 6, 0.0F, 0.0F, icon, icon, 16, 16, 16, 16);
+        };
+    }
+
+    /** True when a right-click lands on {@code button} inside the scrolling area. */
+    private boolean rightClicked(MouseButtonEvent event, Button button) {
+        return event.button() == 1 && button != null && button.visible && inList(event.y())
+                && button.isMouseOver(event.x(), event.y());
+    }
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
-        if (event.button() == 1 && totemButton != null && totemButton.visible && inList(event.y())
-                && totemButton.isMouseOver(event.x(), event.y())) {
+        Config c = Config.get();
+        if (rightClicked(event, totemButton)) {
             Minecraft.getInstance().gui.setScreen(new ColorPickerScreen(this, "Totem Background",
-                    Config.get().totemRgb(), rgb -> {
-                        Config c = Config.get();
+                    c.totemRgb(), c.totemCustom ? c.totemOpacity : 100, (rgb, opacity) -> {
                         c.totemCustomRgb = rgb;
+                        c.totemOpacity = opacity;
                         c.totemCustom = true;
                         c.totemBackground = true;
-                    }, SettingsScreen::drawTotemPreview));
+                    }, slotPreview(TOTEM_TEXTURE)));
+            return true;
+        }
+        if (rightClicked(event, breachButton)) {
+            Minecraft.getInstance().gui.setScreen(new ColorPickerScreen(this, "Breach Mace Color",
+                    c.breachCustom ? c.breachCustomRgb : c.breachColor.rgb(), c.breachCustom ? c.breachOpacity : 100,
+                    (rgb, opacity) -> {
+                        c.breachCustomRgb = rgb;
+                        c.breachOpacity = opacity;
+                        c.breachCustom = true;
+                    }, slotPreview(MACE_TEXTURE)));
+            return true;
+        }
+        if (rightClicked(event, densityButton)) {
+            Minecraft.getInstance().gui.setScreen(new ColorPickerScreen(this, "Density Mace Color",
+                    c.densityCustom ? c.densityCustomRgb : c.densityColor.rgb(), c.densityCustom ? c.densityOpacity : 100,
+                    (rgb, opacity) -> {
+                        c.densityCustomRgb = rgb;
+                        c.densityOpacity = opacity;
+                        c.densityCustom = true;
+                    }, slotPreview(MACE_TEXTURE)));
             return true;
         }
         // A setting partly scrolled behind the title or the Done button can't be clicked there.

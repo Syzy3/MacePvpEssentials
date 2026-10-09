@@ -29,6 +29,14 @@ public final class Config {
     /** True when the totem uses the color picked with right-click. */
     public boolean totemCustom = false;
     public int totemCustomRgb = 0xFFD24A;
+    public int totemOpacity = 100;
+    /** Custom colors picked with right-click on the Breach / Density buttons. */
+    public boolean breachCustom = false;
+    public int breachCustomRgb = 0x55CCFF;
+    public int breachOpacity = 100;
+    public boolean densityCustom = false;
+    public int densityCustomRgb = 0x2B4BE0;
+    public int densityOpacity = 100;
     public dev.macepvpessentials.crosshair.CrosshairSettings crosshair = new dev.macepvpessentials.crosshair.CrosshairSettings();
 
     /** The totem background as a slot fill (0 when off). */
@@ -36,12 +44,26 @@ public final class Config {
         if (!totemBackground) {
             return 0;
         }
-        return totemCustom ? (0x60000000 | (totemCustomRgb & 0xFFFFFF)) : totemColor.slotColor();
+        return totemCustom ? withOpacity(totemCustomRgb, totemOpacity) : totemColor.slotColor();
     }
 
     /** The totem background color without transparency, for labels. */
     public int totemRgb() {
         return totemCustom ? totemCustomRgb & 0xFFFFFF : totemColor.rgb();
+    }
+
+    public int breachSlotColor() {
+        return breachCustom ? withOpacity(breachCustomRgb, breachOpacity) : breachColor.slotColor();
+    }
+
+    public int densitySlotColor() {
+        return densityCustom ? withOpacity(densityCustomRgb, densityOpacity) : densityColor.slotColor();
+    }
+
+    /** {@code rgb} as a slot fill at {@code opacity} percent. */
+    public static int withOpacity(int rgb, int opacity) {
+        int alpha = Math.round(Math.max(0, Math.min(100, opacity)) / 100.0F * 255.0F);
+        return alpha << 24 | (rgb & 0xFFFFFF);
     }
 
     public static Config get() {
