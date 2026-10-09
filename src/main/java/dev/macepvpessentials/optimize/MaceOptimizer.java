@@ -9,6 +9,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MaceItem;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -25,6 +26,8 @@ public final class MaceOptimizer {
     private static final int ECHO_WINDOW_TICKS = 40;
 
     private static int predictedTick = -1;
+    /** Wind Burst adds its launch on top of the server's copy, so that copy must not be skipped. */
+    private static boolean keepServerCopy;
 
     private MaceOptimizer() {
     }
@@ -50,6 +53,8 @@ public final class MaceOptimizer {
         player.setDeltaMovement(motion.x, SMASH_Y, motion.z);
         player.resetFallDistance();
         predictedTick = player.tickCount;
+        keepServerCopy = player.getMainHandItem().getEnchantments().keySet().stream()
+                .anyMatch(e -> e.is(Enchantments.WIND_BURST));
     }
 
     /** True if this motion update is the server's copy of a bounce already applied. */
@@ -70,6 +75,6 @@ public final class MaceOptimizer {
             return false;
         }
         predictedTick = -1;
-        return true;
+        return !keepServerCopy;
     }
 }
