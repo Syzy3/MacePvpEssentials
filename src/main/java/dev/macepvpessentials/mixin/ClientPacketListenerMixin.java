@@ -44,7 +44,8 @@ public abstract class ClientPacketListenerMixin {
     private void macepvpessentials$smashSound(ClientLevel level, Entity except, double x, double y, double z,
                                               Holder<SoundEvent> sound, SoundSource source, float volume, float pitch,
                                               long seed, Operation<Void> original) {
-        if (!MaceOptimizer.skipServerSound(sound.value(), x, y, z)) {
+        if (!MaceOptimizer.skipServerSound(sound.value(), x, y, z)
+                && !dev.macepvpessentials.optimize.PearlOptimizer.skipServerSound(sound.value(), x, y, z)) {
             original.call(level, except, x, y, z, sound, source, volume, pitch, seed);
         }
     }
