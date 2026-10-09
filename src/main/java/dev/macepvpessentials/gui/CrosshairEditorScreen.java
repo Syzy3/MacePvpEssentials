@@ -116,9 +116,9 @@ public final class CrosshairEditorScreen extends Screen {
         graphics.fill(px, py, px + w, sky, -7951896);
         graphics.fill(px, sky, px + w, grass, -10577348);
         graphics.fill(px, grass, px + w, py + h, -8750470);
-        boolean elytra = s.showElytra && previewElytra();
         int reach = CrosshairRenderer.reach(s);
-        int across = reach + (elytra ? 11 : 2);
+        // Always leave room for the elytra icon so the preview size never jumps.
+        int across = reach + 11;
         int down = reach + (s.showCooldown ? 7 : 2);
         float scale = Math.max(1.0F, Math.min(4.0F, Math.min(((float)w / 2.0F - 3.0F) / (float)across, ((float)h / 2.0F - 3.0F) / (float)down)));
         float demoCooldown = (float)(System.currentTimeMillis() % 1600L) / 1600.0F;
