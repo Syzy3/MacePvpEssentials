@@ -6,6 +6,11 @@ import dev.macepvpessentials.ShieldStatus;
 import dev.macepvpessentials.optimize.MaceOptimizer;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
@@ -31,6 +36,25 @@ public abstract class ClientPacketListenerMixin {
     private void macepvpessentials$maceBounce(Entity entity, Vec3 movement, Operation<Void> original) {
         if (!MaceOptimizer.skipServerCopy(entity, movement)) {
             original.call(entity, movement);
+        }
+    }
+
+    @WrapOperation(method = "handleSoundEvent", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/multiplayer/ClientLevel;playSeededSound(Lnet/minecraft/world/entity/Entity;DDDLnet/minecraft/core/Holder;Lnet/minecraft/sounds/SoundSource;FFJ)V"))
+    private void macepvpessentials$smashSound(ClientLevel level, Entity except, double x, double y, double z,
+                                              Holder<SoundEvent> sound, SoundSource source, float volume, float pitch,
+                                              long seed, Operation<Void> original) {
+        if (!MaceOptimizer.skipServerSound(sound.value(), x, y, z)) {
+            original.call(level, except, x, y, z, sound, source, volume, pitch, seed);
+        }
+    }
+
+    @WrapOperation(method = "handleLevelEvent", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/multiplayer/ClientLevel;levelEvent(ILnet/minecraft/core/BlockPos;I)V"))
+    private void macepvpessentials$smashParticles(ClientLevel level, int type, BlockPos pos, int data,
+                                                  Operation<Void> original) {
+        if (!MaceOptimizer.skipServerSmash(type, pos)) {
+            original.call(level, type, pos, data);
         }
     }
 }
