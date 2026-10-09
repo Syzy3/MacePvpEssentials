@@ -200,8 +200,7 @@ public final class SettingsScreen extends Screen {
     /** The color picker's preview: a totem in a slot with the picked background. */
     private static void drawTotemPreview(GuiGraphicsExtractor graphics, int x, int y, int size, int rgb) {
         graphics.fill(x - 1, y - 1, x + size + 1, y + size + 1, 0xFF000000);
-        graphics.fill(x, y, x + size, y + size, 0xFF8B8B8B);
-        graphics.fill(x, y, x + size, y + size, 0x60000000 | rgb);
+        graphics.fill(x, y, x + size, y + size, 0xFF000000 | rgb);
         int icon = size - 12;
         graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TOTEM_TEXTURE,
                 x + 6, y + 6, 0.0F, 0.0F, icon, icon, 16, 16, 16, 16);
