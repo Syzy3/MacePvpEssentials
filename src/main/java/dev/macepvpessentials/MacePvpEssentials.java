@@ -16,7 +16,7 @@ public final class MacePvpEssentials implements ClientModInitializer {
     public void onInitializeClient() {
         Config.load();
         KineticButton.register();
-        dev.macepvpessentials.optimize.PearlOptimizer.register();
+        dev.macepvpessentials.optimize.ThrowOptimizer.register();
         LOGGER.info("Mace PvP Essentials ready");
     }
 }

@@ -38,7 +38,7 @@ public final class SettingsScreen extends Screen {
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 30;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 324;
+    private static final int CONTENT_BOTTOM = 348;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -142,6 +142,14 @@ public final class SettingsScreen extends Screen {
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 40, BUTTON_WIDTH, 20).build();
         pearl.setTooltip(Tooltip.create(Component.literal("Your pearl shows the moment you throw it. The server still controls the real pearl.")));
         addScrolled(pearl);
+
+        Button wind = Button.builder(onOff("Wind Charge Optimization", Config.get().windChargeOptimization), b -> {
+            Config.get().windChargeOptimization = !Config.get().windChargeOptimization;
+            Config.save();
+            b.setMessage(onOff("Wind Charge Optimization", Config.get().windChargeOptimization));
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 64, BUTTON_WIDTH, 20).build();
+        wind.setTooltip(Tooltip.create(Component.literal("Your wind charge shows the moment you throw it. The server still controls the real one.")));
+        addScrolled(wind);
 
         // Visuals: Shield Status, under Hitboxes
         Button shield = Button.builder(onOff("Shield Status", Config.get().shieldStatus), b -> {

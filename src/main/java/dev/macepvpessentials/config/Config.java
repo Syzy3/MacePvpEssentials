@@ -26,6 +26,7 @@ public final class Config {
     /** Game Optimization (both off by default). */
     public boolean maceOptimization = false;
     public boolean pearlOptimization = false;
+    public boolean windChargeOptimization = false;
     /** Colored background behind Totems of Undying (off by default). */
     public boolean totemBackground = false;
     public SlotColor totemColor = SlotColor.GREEN;

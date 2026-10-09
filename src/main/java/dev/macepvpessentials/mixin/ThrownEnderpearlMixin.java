@@ -1,6 +1,6 @@
 package dev.macepvpessentials.mixin;
 
-import dev.macepvpessentials.optimize.PearlOptimizer;
+import dev.macepvpessentials.optimize.ThrowOptimizer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl;
 import net.minecraft.world.phys.HitResult;
@@ -16,7 +16,7 @@ public abstract class ThrownEnderpearlMixin {
     @Inject(method = "onHit", at = @At("HEAD"), cancellable = true)
     private void macepvpessentials$standInHit(HitResult hitResult, CallbackInfo ci) {
         Entity self = (Entity) (Object) this;
-        if (PearlOptimizer.isStandIn(self)) {
+        if (ThrowOptimizer.isStandIn(self)) {
             ci.cancel();
             self.discard();
         }
