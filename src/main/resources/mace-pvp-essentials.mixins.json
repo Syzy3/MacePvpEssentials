@@ -10,6 +10,7 @@
     "ClientPacketListenerMixin",
     "DebugRendererMixin",
     "EntityHitboxDebugRendererAccessor",
+    "FireworkRocketEntityMixin",
     "HudMixin",
     "MultiPlayerGameModeMixin",
     "ShieldSpecialRendererMixin",

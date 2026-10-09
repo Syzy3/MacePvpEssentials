@@ -38,7 +38,7 @@ public final class SettingsScreen extends Screen {
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 30;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 348;
+    private static final int CONTENT_BOTTOM = 372;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -150,6 +150,14 @@ public final class SettingsScreen extends Screen {
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 64, BUTTON_WIDTH, 20).build();
         wind.setTooltip(Tooltip.create(Component.literal("Your wind charge shows the moment you throw it. The server still controls the real one.")));
         addScrolled(wind);
+
+        Button elytra = Button.builder(onOff("Elytra Optimization", Config.get().elytraOptimization), b -> {
+            Config.get().elytraOptimization = !Config.get().elytraOptimization;
+            Config.save();
+            b.setMessage(onOff("Elytra Optimization", Config.get().elytraOptimization));
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 88, BUTTON_WIDTH, 20).build();
+        elytra.setTooltip(Tooltip.create(Component.literal("Rocket boosts start the moment you use them. Strict anticheats may flag this.")));
+        addScrolled(elytra);
 
         // Visuals: Shield Status, under Hitboxes
         Button shield = Button.builder(onOff("Shield Status", Config.get().shieldStatus), b -> {

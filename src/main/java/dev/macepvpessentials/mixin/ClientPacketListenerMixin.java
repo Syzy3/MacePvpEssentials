@@ -45,7 +45,8 @@ public abstract class ClientPacketListenerMixin {
                                               Holder<SoundEvent> sound, SoundSource source, float volume, float pitch,
                                               long seed, Operation<Void> original) {
         if (!MaceOptimizer.skipServerSound(sound.value(), x, y, z)
-                && !dev.macepvpessentials.optimize.ThrowOptimizer.skipServerSound(sound.value(), x, y, z)) {
+                && !dev.macepvpessentials.optimize.ThrowOptimizer.skipServerSound(sound.value(), x, y, z)
+                && !dev.macepvpessentials.optimize.FireworkOptimizer.skipServerSound(sound.value(), x, y, z)) {
             original.call(level, except, x, y, z, sound, source, volume, pitch, seed);
         }
     }

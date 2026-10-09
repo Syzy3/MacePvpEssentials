@@ -21,6 +21,8 @@ public abstract class MultiPlayerGameModeMixin {
 
     @Unique
     private ItemStack macepvpessentials$pearl = ItemStack.EMPTY;
+    @Unique
+    private ItemStack macepvpessentials$rocket = ItemStack.EMPTY;
 
     @Inject(method = "attack", at = @At("HEAD"))
     private void macepvpessentials$attack(Player player, Entity target, CallbackInfo ci) {
@@ -33,6 +35,8 @@ public abstract class MultiPlayerGameModeMixin {
         ItemStack held = player.getItemInHand(hand);
         macepvpessentials$pearl = ThrowOptimizer.handles(held) && !player.getCooldowns().isOnCooldown(held)
                 ? held.copyWithCount(1) : ItemStack.EMPTY;
+        macepvpessentials$rocket = dev.macepvpessentials.optimize.FireworkOptimizer.handles(player, held)
+                ? held.copyWithCount(1) : ItemStack.EMPTY;
     }
 
     @Inject(method = "useItem", at = @At("RETURN"))
@@ -40,6 +44,10 @@ public abstract class MultiPlayerGameModeMixin {
         if (!macepvpessentials$pearl.isEmpty() && cir.getReturnValue().consumesAction()) {
             ThrowOptimizer.onThrow(player, macepvpessentials$pearl);
         }
+        if (!macepvpessentials$rocket.isEmpty() && cir.getReturnValue().consumesAction()) {
+            dev.macepvpessentials.optimize.FireworkOptimizer.onUse(player, macepvpessentials$rocket);
+        }
         macepvpessentials$pearl = ItemStack.EMPTY;
+        macepvpessentials$rocket = ItemStack.EMPTY;
     }
 }

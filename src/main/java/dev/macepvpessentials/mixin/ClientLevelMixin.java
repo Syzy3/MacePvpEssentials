@@ -15,5 +15,6 @@ public abstract class ClientLevelMixin {
     @Inject(method = "addEntity", at = @At("TAIL"))
     private void macepvpessentials$entityAdded(Entity entity, CallbackInfo ci) {
         ThrowOptimizer.onEntityAdded(entity);
+        dev.macepvpessentials.optimize.FireworkOptimizer.onEntityAdded(entity);
     }
 }
