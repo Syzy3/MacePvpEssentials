@@ -5,12 +5,15 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "AbstractContainerScreenMixin",
+    "ClientLevelMixin",
     "ClientPacketListenerMixin",
     "DebugRendererMixin",
     "EntityHitboxDebugRendererAccessor",
     "HudMixin",
+    "MultiPlayerGameModeMixin",
     "ShieldSpecialRendererMixin",
-    "SpecialModelWrapperMixin"
+    "SpecialModelWrapperMixin",
+    "ThrownEnderpearlMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -32,12 +32,13 @@ public final class SettingsScreen extends Screen {
     private static final int VISUALS_TOP = 40;
     private static final int MACE_SLOTS_TOP = 136;
     private static final int CROSSHAIR_TOP = 184;
+    private static final int OPTIMIZATION_TOP = 256;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 30;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 252;
+    private static final int CONTENT_BOTTOM = 324;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -124,6 +125,23 @@ public final class SettingsScreen extends Screen {
         defaultCrosshair.setTooltip(Tooltip.create(Component.literal("Uses Minecraft's normal crosshair. Turn off to make your own.")));
         addScrolled(defaultCrosshair);
         addScrolled(edit);
+
+        // Game Optimization
+        Button mace = Button.builder(onOff("Mace Optimization", Config.get().maceOptimization), b -> {
+            Config.get().maceOptimization = !Config.get().maceOptimization;
+            Config.save();
+            b.setMessage(onOff("Mace Optimization", Config.get().maceOptimization));
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 16, BUTTON_WIDTH, 20).build();
+        mace.setTooltip(Tooltip.create(Component.literal("Your smash-hit bounce happens instantly instead of waiting for the server.")));
+        addScrolled(mace);
+
+        Button pearl = Button.builder(onOff("Pearl Optimization", Config.get().pearlOptimization), b -> {
+            Config.get().pearlOptimization = !Config.get().pearlOptimization;
+            Config.save();
+            b.setMessage(onOff("Pearl Optimization", Config.get().pearlOptimization));
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 40, BUTTON_WIDTH, 20).build();
+        pearl.setTooltip(Tooltip.create(Component.literal("Your pearl shows the moment you throw it. The server still controls the real pearl.")));
+        addScrolled(pearl);
 
         // Visuals: Shield Status, under Hitboxes
         Button shield = Button.builder(onOff("Shield Status", Config.get().shieldStatus), b -> {
@@ -310,6 +328,7 @@ public final class SettingsScreen extends Screen {
         section(graphics, "Visuals", VISUALS_TOP - offset);
         section(graphics, "Mace Slots", MACE_SLOTS_TOP - offset);
         section(graphics, "Crosshair", CROSSHAIR_TOP - offset);
+        section(graphics, "Game Optimization", OPTIMIZATION_TOP - offset);
         for (AbstractWidget w : scrolled) {
             w.extractRenderState(graphics, mx, my, delta);
         }

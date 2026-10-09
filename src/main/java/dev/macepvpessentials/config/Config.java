@@ -23,6 +23,9 @@ public final class Config {
     public SlotColor breachColor = SlotColor.LIGHT_BLUE;
     public SlotColor densityColor = SlotColor.DARK_BLUE;
     public boolean shieldStatus = true;
+    /** Game Optimization (both off by default). */
+    public boolean maceOptimization = false;
+    public boolean pearlOptimization = false;
     /** Colored background behind Totems of Undying (off by default). */
     public boolean totemBackground = false;
     public SlotColor totemColor = SlotColor.GREEN;
