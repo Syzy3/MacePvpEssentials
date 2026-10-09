@@ -6,10 +6,15 @@ import dev.macepvpessentials.config.HitboxMode;
 import dev.macepvpessentials.config.SlotColor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Mace PvP Essentials settings: normal Minecraft buttons, grouped under section headings
@@ -29,7 +34,18 @@ public final class SettingsScreen extends Screen {
     private static final int CROSSHAIR_TOP = 160;
     private static final int HALF_WIDTH = 122;
 
+    /** The settings scroll between the title and the Done button. */
+    private static final int LIST_TOP = 30;
+    private static final int LIST_BOTTOM_MARGIN = 34;
+    private static final int CONTENT_BOTTOM = 228;
+    private static final int SCROLL_STEP = 16;
+
     private final Screen parent;
+
+    /** Widgets inside the scrolling area, with their unscrolled y. */
+    private final List<AbstractWidget> scrolled = new ArrayList<>();
+    private final List<Integer> baseY = new ArrayList<>();
+    private double scroll;
 
     /** The Hitboxes choice on screen; read on open so the F3+F6 option is reflected. */
     private HitboxMode hitboxes;
@@ -46,6 +62,8 @@ public final class SettingsScreen extends Screen {
 
     @Override
     protected void init() {
+        scrolled.clear();
+        baseY.clear();
         if (hitboxes == null) {
             hitboxes = Hitboxes.current();
         }
@@ -57,7 +75,7 @@ public final class SettingsScreen extends Screen {
             b.setMessage(Component.literal("Hitboxes: " + hitboxes.label()));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 16, BUTTON_WIDTH, 20).build();
         hitboxButton.setTooltip(Tooltip.create(Component.literal("Shows the hitboxes of players and mobs.")));
-        addRenderableWidget(hitboxButton);
+        addScrolled(hitboxButton);
 
         // Mace Slots: two buttons side by side.
         int pairLeft = this.width / 2 - HALF_WIDTH - 2;
@@ -67,7 +85,7 @@ public final class SettingsScreen extends Screen {
             b.setMessage(colorLabel("Breach", Config.get().breachColor));
         }).bounds(pairLeft, MACE_SLOTS_TOP + 16, HALF_WIDTH, 20).build();
         breach.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Breach mace.")));
-        addRenderableWidget(breach);
+        addScrolled(breach);
 
         Button density = Button.builder(colorLabel("Density", Config.get().densityColor), b -> {
             Config.get().densityColor = Config.get().densityColor.next();
@@ -75,7 +93,7 @@ public final class SettingsScreen extends Screen {
             b.setMessage(colorLabel("Density", Config.get().densityColor));
         }).bounds(pairLeft + HALF_WIDTH + 4, MACE_SLOTS_TOP + 16, HALF_WIDTH, 20).build();
         density.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Density mace.")));
-        addRenderableWidget(density);
+        addScrolled(density);
 
         // Crosshair: Default Crosshair on = Minecraft's own crosshair, so the editor is greyed out.
         Button edit = Button.builder(Component.literal("Edit Crosshair..."),
@@ -89,8 +107,8 @@ public final class SettingsScreen extends Screen {
             edit.active = Config.get().crosshair.custom;
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, CROSSHAIR_TOP + 16, BUTTON_WIDTH, 20).build();
         defaultCrosshair.setTooltip(Tooltip.create(Component.literal("Uses Minecraft's normal crosshair. Turn off to make your own.")));
-        addRenderableWidget(defaultCrosshair);
-        addRenderableWidget(edit);
+        addScrolled(defaultCrosshair);
+        addScrolled(edit);
 
         // Visuals: Shield Status, under Hitboxes
         Button shield = Button.builder(onOff("Shield Status", Config.get().shieldStatus), b -> {
@@ -99,10 +117,62 @@ public final class SettingsScreen extends Screen {
             b.setMessage(onOff("Shield Status", Config.get().shieldStatus));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 40, BUTTON_WIDTH, 20).build();
         shield.setTooltip(Tooltip.create(Component.literal("Shields are green when ready and red when disabled.")));
-        addRenderableWidget(shield);
+        addScrolled(shield);
 
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
                 .bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());
+        setScroll(scroll);
+    }
+
+    private void addScrolled(AbstractWidget widget) {
+        scrolled.add(widget);
+        baseY.add(widget.getY());
+        addWidget(widget);
+    }
+
+    private int listBottom() {
+        return this.height - LIST_BOTTOM_MARGIN;
+    }
+
+    private int maxScroll() {
+        return Math.max(0, CONTENT_BOTTOM - listBottom());
+    }
+
+    /** Moves the settings to the given scroll and hides the ones fully out of view. */
+    private void setScroll(double value) {
+        scroll = Math.max(0, Math.min(maxScroll(), value));
+        for (int i = 0; i < scrolled.size(); i++) {
+            AbstractWidget w = scrolled.get(i);
+            int y = baseY.get(i) - (int) scroll;
+            w.setY(y);
+            w.visible = y + w.getHeight() > LIST_TOP && y < listBottom();
+        }
+    }
+
+    private boolean inList(double mouseY) {
+        return mouseY >= LIST_TOP && mouseY < listBottom();
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (maxScroll() > 0) {
+            setScroll(scroll - scrollY * SCROLL_STEP);
+            return true;
+        }
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+    }
+
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        // A setting partly scrolled behind the title or the Done button can't be clicked there.
+        if (!inList(event.y())) {
+            for (AbstractWidget w : scrolled) {
+                if (w.visible && w.isMouseOver(event.x(), event.y())) {
+                    return true;
+                }
+            }
+        }
+        return super.mouseClicked(event, doubleClick);
     }
 
     @Override
@@ -111,9 +181,28 @@ public final class SettingsScreen extends Screen {
 
         graphics.centeredText(this.font, this.title, this.width / 2, 15, WHITE);
 
-        section(graphics, "Visuals", VISUALS_TOP);
-        section(graphics, "Mace Slots", MACE_SLOTS_TOP);
-        section(graphics, "Crosshair", CROSSHAIR_TOP);
+        // The scrolling settings, cut off at the title and the Done button.
+        int offset = (int) scroll;
+        int mx = inList(mouseY) ? mouseX : -1;
+        int my = inList(mouseY) ? mouseY : -1;
+        graphics.enableScissor(0, LIST_TOP, this.width, listBottom());
+        section(graphics, "Visuals", VISUALS_TOP - offset);
+        section(graphics, "Mace Slots", MACE_SLOTS_TOP - offset);
+        section(graphics, "Crosshair", CROSSHAIR_TOP - offset);
+        for (AbstractWidget w : scrolled) {
+            w.extractRenderState(graphics, mx, my, delta);
+        }
+        graphics.disableScissor();
+
+        // Scroll bar, only when everything doesn't fit.
+        if (maxScroll() > 0) {
+            int x = this.width / 2 + SECTION_WIDTH / 2 + 6;
+            int track = listBottom() - LIST_TOP;
+            int thumb = Math.max(12, track * track / (track + maxScroll()));
+            int y = LIST_TOP + (int) ((track - thumb) * (scroll / maxScroll()));
+            graphics.fill(x, LIST_TOP, x + 4, listBottom(), 0x80000000);
+            graphics.fill(x, y, x + 4, y + thumb, 0xFFA0A0A0);
+        }
     }
 
     private static Component onOff(String name, boolean on) {

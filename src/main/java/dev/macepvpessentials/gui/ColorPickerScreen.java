@@ -15,17 +15,28 @@ public final class ColorPickerScreen extends Screen {
     private static final int TOP = 34;
     private static final int PREVIEW = 76;
     private final Screen parent;
+    private final java.util.function.IntConsumer onDone;
     private int red;
     private int green;
     private int blue;
 
+    /** Picks the crosshair's own custom color. */
     public ColorPickerScreen(Screen parent) {
-        super(Component.literal("Crosshair Color"));
+        this(parent, "Crosshair Color", Config.get().crosshair.rgb(), (rgb) -> {
+            CrosshairSettings s = Config.get().crosshair;
+            s.customRgb = rgb;
+            s.color = CrosshairColor.CUSTOM;
+        });
+    }
+
+    /** Picks a color starting from {@code startRgb}; {@code onDone} gets it when Done is pressed. */
+    public ColorPickerScreen(Screen parent, String title, int startRgb, java.util.function.IntConsumer onDone) {
+        super(Component.literal(title));
         this.parent = parent;
-        int rgb = Config.get().crosshair.rgb();
-        this.red = rgb >> 16 & 255;
-        this.green = rgb >> 8 & 255;
-        this.blue = rgb & 255;
+        this.onDone = onDone;
+        this.red = startRgb >> 16 & 255;
+        this.green = startRgb >> 8 & 255;
+        this.blue = startRgb & 255;
     }
 
     private int left() {
@@ -43,9 +54,7 @@ public final class ColorPickerScreen extends Screen {
         this.addRenderableWidget(new IntSlider(x, 78, 150, 18, "Blue", 0, 255, this.blue, Integer::toString, (v) -> this.blue = v));
         this.addRenderableWidget(Button.builder(Component.literal("Cancel"), (b) -> this.back()).bounds(this.width / 2 - 102, this.height - 26, 100, 18).build());
         this.addRenderableWidget(Button.builder(Component.literal("Done"), (b) -> {
-            CrosshairSettings s = Config.get().crosshair;
-            s.customRgb = this.rgb();
-            s.color = CrosshairColor.CUSTOM;
+            this.onDone.accept(this.rgb());
             Config.save();
             this.back();
         }).bounds(this.width / 2 + 2, this.height - 26, 100, 18).build());

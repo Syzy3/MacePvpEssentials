@@ -11,6 +11,7 @@ import dev.macepvpessentials.crosshair.CrosshairSettings;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.resources.Identifier;
+import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
@@ -58,5 +59,13 @@ public abstract class HudMixin {
         boolean elytra = player != null && CrosshairInfo.wearingElytra(player);
         int rgb = s.currentRgb(CrosshairInfo.onPlayer());
         CrosshairRenderer.draw(graphics, s, cx, cy, rgb, cooldown, elytra);
+    }
+
+    /** Third Person on: the crosshair also shows in F5 (Minecraft hides it there). */
+    @WrapOperation(method = "extractCrosshair", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
+    private boolean macepvpessentials$thirdPerson(CameraType type, Operation<Boolean> original) {
+        CrosshairSettings s = Config.get().crosshair;
+        return original.call(type) || (s.custom && s.thirdPerson);
     }
 }
