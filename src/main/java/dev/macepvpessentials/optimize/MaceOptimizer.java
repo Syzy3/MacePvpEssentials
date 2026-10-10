@@ -50,7 +50,7 @@ public final class MaceOptimizer {
 
     /** Called when you attack, before the attack is sent. */
     public static void onAttack(Player player, Entity target) {
-        if (!Config.get().maceOptimization || !(player instanceof LocalPlayer)) {
+        if (!Config.on() || !Config.get().maceOptimization || !(player instanceof LocalPlayer)) {
             return;
         }
         if (!player.getMainHandItem().is(Items.MACE) || !MaceItem.canSmashAttack(player)) {

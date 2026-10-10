@@ -27,7 +27,7 @@ public abstract class ItemInHandRendererMixin {
                                                AbstractClientPlayer player, float frameInterp, float xRot,
                                                InteractionHand hand) {
         int percent = 100;
-        if (hand == InteractionHand.OFF_HAND) {
+        if (hand == InteractionHand.OFF_HAND && Config.on()) {
             if (stack.is(Items.SHIELD)) {
                 percent = Config.get().offhandShieldSize;
             } else if (stack.is(Items.TOTEM_OF_UNDYING)) {

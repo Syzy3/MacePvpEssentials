@@ -64,6 +64,6 @@ public final class Particles {
 
     /** True when no particles should be shown at all. */
     public static boolean none() {
-        return Config.get().particlesNone;
+        return Config.on() && Config.get().particlesNone;
     }
 }

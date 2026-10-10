@@ -44,7 +44,7 @@ public final class ThrowOptimizer {
         }
 
         boolean enabled() {
-            return this == PEARL ? Config.get().pearlOptimization : Config.get().windChargeOptimization;
+            return Config.on() && (this == PEARL ? Config.get().pearlOptimization : Config.get().windChargeOptimization);
         }
 
         boolean matches(Entity entity) {

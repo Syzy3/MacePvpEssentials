@@ -15,7 +15,7 @@ public abstract class ScreenEffectRendererMixin {
     @WrapOperation(method = "renderItemActivationAnimation", at = @At(value = "INVOKE",
             target = "Lcom/mojang/blaze3d/vertex/PoseStack;scale(FFF)V"))
     private void macepvpessentials$popSize(PoseStack poseStack, float x, float y, float z, Operation<Void> original) {
-        float size = Config.get().totemPopSize / 100.0F;
+        float size = Config.on() ? Config.get().totemPopSize / 100.0F : 1.0F;
         original.call(poseStack, x * size, y * size, z * size);
     }
 }

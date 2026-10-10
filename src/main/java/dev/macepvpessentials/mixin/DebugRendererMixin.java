@@ -32,7 +32,7 @@ public abstract class DebugRendererMixin {
     @Inject(method = "emitGizmos", at = @At("TAIL"))
     private void macepvpessentials$elytraHitboxes(Frustum frustum, double camX, double camY, double camZ,
                                                   float partialTicks, CallbackInfo ci) {
-        if (Config.get().hitboxes != HitboxMode.ELYTRA_ONLY) {
+        if (!Config.on() || Config.get().hitboxes != HitboxMode.ELYTRA_ONLY) {
             return;
         }
         Minecraft mc = Minecraft.getInstance();

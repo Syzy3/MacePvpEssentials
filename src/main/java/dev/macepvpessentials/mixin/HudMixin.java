@@ -45,7 +45,7 @@ public abstract class HudMixin {
                                              int x, int y, int width, int height, Operation<Void> original,
                                              GuiGraphicsExtractor g, DeltaTracker deltaTracker) {
         CrosshairSettings s = Config.get().crosshair;
-        if (!s.custom) {
+        if (!Config.on() || !s.custom) {
             // Default Crosshair is on: plain Minecraft crosshair, nothing added.
             original.call(new Object[]{graphics, pipeline, sprite, x, y, width, height});
             return;
@@ -66,6 +66,6 @@ public abstract class HudMixin {
             target = "Lnet/minecraft/client/CameraType;isFirstPerson()Z"))
     private boolean macepvpessentials$thirdPerson(CameraType type, Operation<Boolean> original) {
         CrosshairSettings s = Config.get().crosshair;
-        return original.call(type) || (s.custom && s.thirdPerson);
+        return original.call(type) || (Config.on() && s.custom && s.thirdPerson);
     }
 }

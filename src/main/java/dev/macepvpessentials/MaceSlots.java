@@ -26,7 +26,7 @@ public final class MaceSlots {
     }
 
     private static int colorFor(ItemStack stack) {
-        if (stack.isEmpty()) {
+        if (stack.isEmpty() || !Config.on()) {
             return 0;
         }
         if (stack.getItem() == Items.MACE) {

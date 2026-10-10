@@ -29,7 +29,7 @@ public abstract class InterpolationHandlerMixin {
     @Inject(method = "interpolateTo", at = @At("HEAD"))
     private void macepvpessentials$opponentDelay(Vec3 position, float yRot, float xRot, CallbackInfo ci) {
         if (entity instanceof RemotePlayer) {
-            interpolationSteps = Config.get().opponentDelay.steps();
+            interpolationSteps = Config.on() ? Config.get().opponentDelay.steps() : InterpolationHandler.DEFAULT_INTERPOLATION_STEPS;
         }
     }
 }

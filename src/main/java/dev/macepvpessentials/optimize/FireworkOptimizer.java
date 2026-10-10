@@ -59,7 +59,7 @@ public final class FireworkOptimizer {
 
     /** Whether using this item right now should start a boost early. */
     public static boolean handles(Player player, ItemStack stack) {
-        return Config.get().rocketOptimization && stack.is(Items.FIREWORK_ROCKET) && player.isFallFlying();
+        return Config.on() && Config.get().rocketOptimization && stack.is(Items.FIREWORK_ROCKET) && player.isFallFlying();
     }
 
     public static boolean isStandIn(Entity entity) {

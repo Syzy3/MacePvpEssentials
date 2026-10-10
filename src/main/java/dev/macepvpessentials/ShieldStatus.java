@@ -43,7 +43,7 @@ public final class ShieldStatus {
 
     /** The tint for a shield held by {@code owner}, or 0 for no tint. */
     public static int tint(ItemOwner owner, ItemStack stack) {
-        if (!Config.get().shieldStatus || owner == null || !stack.has(DataComponents.BLOCKS_ATTACKS)) {
+        if (!Config.on() || !Config.get().shieldStatus || owner == null || !stack.has(DataComponents.BLOCKS_ATTACKS)) {
             return 0;
         }
         LivingEntity living = owner.asLivingEntity();
@@ -70,7 +70,7 @@ public final class ShieldStatus {
     public static void onSound(Holder<SoundEvent> sound, double x, double y, double z) {
         Minecraft mc = Minecraft.getInstance();
         ClientLevel level = mc.level;
-        if (level == null || !Config.get().shieldStatus) {
+        if (level == null || !Config.on() || !Config.get().shieldStatus) {
             return;
         }
         if (level != trackedLevel) {

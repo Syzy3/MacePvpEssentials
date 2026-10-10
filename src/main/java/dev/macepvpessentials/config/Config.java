@@ -19,6 +19,8 @@ public final class Config {
 
     private static Config current = new Config();
 
+    /** The whole mod on/off (the switch under the title). Off = everything back to normal. */
+    public boolean enabled = true;
     public HitboxMode hitboxes = HitboxMode.OFF;
     public SlotColor breachColor = SlotColor.LIGHT_BLUE;
     public SlotColor densityColor = SlotColor.DARK_BLUE;
@@ -77,6 +79,11 @@ public final class Config {
     public static int withOpacity(int rgb, int opacity) {
         int alpha = Math.round(Math.max(0, Math.min(100, opacity)) / 100.0F * 255.0F);
         return alpha << 24 | (rgb & 0xFFFFFF);
+    }
+
+    /** True while the mod is switched on. */
+    public static boolean on() {
+        return current.enabled;
     }
 
     public static Config get() {

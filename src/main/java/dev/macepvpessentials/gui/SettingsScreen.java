@@ -29,16 +29,16 @@ public final class SettingsScreen extends Screen {
 
     private static final int BUTTON_WIDTH = 200;
     private static final int SECTION_WIDTH = 260;
-    private static final int VISUALS_TOP = 40;
-    private static final int MACE_SLOTS_TOP = 208;
-    private static final int CROSSHAIR_TOP = 256;
-    private static final int OPTIMIZATION_TOP = 328;
+    private static final int VISUALS_TOP = 52;
+    private static final int MACE_SLOTS_TOP = 220;
+    private static final int CROSSHAIR_TOP = 268;
+    private static final int OPTIMIZATION_TOP = 340;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
-    private static final int LIST_TOP = 30;
+    private static final int LIST_TOP = 44;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 490;
+    private static final int CONTENT_BOTTOM = 502;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -208,9 +208,41 @@ public final class SettingsScreen extends Screen {
         offhand.setTooltip(Tooltip.create(Component.literal("Sizes of your offhand shield,\ntotem and the totem pop.")));
         addScrolled(offhand);
 
+        // Mod off: every setting is greyed out (the mod does nothing until it's switched back on).
+        if (!Config.on()) {
+            for (AbstractWidget w : scrolled) {
+                w.active = false;
+            }
+        }
+
+        // The mod on/off switch, under the title.
+        ToggleSwitch modSwitch = new ToggleSwitch(this.width / 2 - 23, 27, Config::on, b -> {
+            Config.get().enabled = !Config.get().enabled;
+            Config.save();
+            this.rebuildWidgets();
+        });
+        modSwitch.setTooltip(Tooltip.create(Component.literal("Turns the whole mod on or off.")));
+        addRenderableWidget(modSwitch);
+
+        // Bottom: Reset, Done, Recommended.
+        int bottomLeft = this.width / 2 - 151;
+        addRenderableWidget(Button.builder(Component.literal("Reset"), b -> confirm(
+                "Reset all settings?", "Every setting goes back to its default.", "Reset"))
+                .bounds(bottomLeft, this.height - 28, 98, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
-                .bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());
+                .bounds(bottomLeft + 102, this.height - 28, 98, 20).build());
+        addRenderableWidget(Button.builder(Component.literal("Recommended"), b -> confirm(
+                "Use recommended settings?", "Switches to the settings we recommend for mace PvP.", "Use"))
+                .bounds(bottomLeft + 204, this.height - 28, 98, 20).build());
         setScroll(scroll);
+    }
+
+    /** A yes/no confirm screen. For now both answers just come back here (the presets aren't set up yet). */
+    private void confirm(String title, String message, String yes) {
+        Minecraft.getInstance().gui.setScreen(new net.minecraft.client.gui.screens.ConfirmScreen(answer -> {
+            // TODO: apply reset / recommended settings when answer is true.
+            Minecraft.getInstance().gui.setScreen(this);
+        }, Component.literal(title), Component.literal(message), Component.literal(yes), Component.literal("Cancel")));
     }
 
     private void addScrolled(AbstractWidget widget) {
