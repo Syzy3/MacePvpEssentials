@@ -86,6 +86,20 @@ public final class Config {
         return current.enabled;
     }
 
+    /** A copy of every setting, to go back to (Cancel in the settings screen). */
+    public static String snapshot() {
+        return GSON.toJson(current);
+    }
+
+    /** Puts every setting back to a {@link #snapshot()} and saves it. */
+    public static void restore(String snapshot) {
+        Config restored = GSON.fromJson(snapshot, Config.class);
+        if (restored != null) {
+            current = restored;
+            save();
+        }
+    }
+
     public static Config get() {
         return current;
     }

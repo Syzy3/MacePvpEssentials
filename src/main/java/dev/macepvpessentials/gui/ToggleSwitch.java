@@ -1,24 +1,36 @@
 package dev.macepvpessentials.gui;
 
 import java.util.function.BooleanSupplier;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 
 /**
- * A small on/off switch: a rounded track that is green when on and grey when off, with a knob
- * that sits on the right (on) or left (off), and "On" / "Off" written beside it.
+ * A small on/off switch made from Minecraft's own slider pieces: the dark slider track with the
+ * stone handle sitting on the right (on) or left (off), and "ON" / "OFF" written in the empty
+ * side in green or red.
  */
 final class ToggleSwitch extends Button {
 
-    private static final int TRACK_W = 24;
-    private static final int TRACK_H = 12;
+    private static final Identifier TRACK = Identifier.withDefaultNamespace("widget/slider");
+    private static final Identifier HANDLE = Identifier.withDefaultNamespace("widget/slider_handle");
+    private static final Identifier HANDLE_HOVER = Identifier.withDefaultNamespace("widget/slider_handle_highlighted");
+    private static final int WIDTH = 44;
+    private static final int HEIGHT = 16;
+    private static final int HANDLE_W = 8;
 
     private final BooleanSupplier on;
 
     ToggleSwitch(int x, int y, BooleanSupplier on, Button.OnPress onPress) {
-        super(x, y, TRACK_W + 4 + 18, TRACK_H, Component.literal("Mod on/off"), onPress, DEFAULT_NARRATION);
+        super(x, y, WIDTH, HEIGHT, Component.literal("Mod on/off"), onPress, DEFAULT_NARRATION);
         this.on = on;
+    }
+
+    static int width() {
+        return WIDTH;
     }
 
     @Override
@@ -26,21 +38,15 @@ final class ToggleSwitch extends Button {
         boolean isOn = on.getAsBoolean();
         int x = this.getX();
         int y = this.getY();
-        int border = this.isHoveredOrFocused() ? 0xFFFFFFFF : 0xFF000000;
-        int track = isOn ? 0xFF3FA33F : 0xFF5A5A5A;
-
-        // Track with cut corners, so it reads as rounded at this size.
-        graphics.fill(x + 1, y, x + TRACK_W - 1, y + TRACK_H, border);
-        graphics.fill(x, y + 1, x + TRACK_W, y + TRACK_H - 1, border);
-        graphics.fill(x + 1, y + 1, x + TRACK_W - 1, y + TRACK_H - 1, track);
-
-        // Knob.
-        int knob = TRACK_H - 2;
-        int kx = isOn ? x + TRACK_W - 1 - knob : x + 1;
-        graphics.fill(kx, y + 1, kx + knob, y + 1 + knob, 0xFF000000);
-        graphics.fill(kx + 1, y + 2, kx + knob - 1, y + knob, 0xFFE0E0E0);
-
-        graphics.text(net.minecraft.client.Minecraft.getInstance().font, isOn ? "On" : "Off",
-                x + TRACK_W + 4, y + 2, isOn ? 0xFF7CFC7C : 0xFFA0A0A0, true);
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, TRACK, x, y, WIDTH, HEIGHT);
+        int hx = isOn ? x + WIDTH - HANDLE_W : x;
+        graphics.blitSprite(RenderPipelines.GUI_TEXTURED, this.isHoveredOrFocused() ? HANDLE_HOVER : HANDLE,
+                hx, y, HANDLE_W, HEIGHT);
+        String label = isOn ? "ON" : "OFF";
+        int textW = Minecraft.getInstance().font.width(label);
+        int free = WIDTH - HANDLE_W;
+        int tx = (isOn ? x : x + HANDLE_W) + (free - textW) / 2;
+        graphics.text(Minecraft.getInstance().font, label, tx, y + (HEIGHT - 8) / 2,
+                isOn ? 0xFF55FF55 : 0xFFFF5555, true);
     }
 }

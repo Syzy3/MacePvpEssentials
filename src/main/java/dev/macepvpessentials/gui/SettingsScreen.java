@@ -33,12 +33,13 @@ public final class SettingsScreen extends Screen {
     private static final int MACE_SLOTS_TOP = 220;
     private static final int CROSSHAIR_TOP = 268;
     private static final int OPTIMIZATION_TOP = 340;
+    private static final int PRESETS_TOP = 510;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 44;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 502;
+    private static final int CONTENT_BOTTOM = 554;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -54,9 +55,19 @@ public final class SettingsScreen extends Screen {
     /** The Hitboxes choice on screen; read on open so the F3+F6 option is reflected. */
     private HitboxMode hitboxes;
 
+    /** Every setting as it was when this screen opened, for Cancel. */
+    private final String snapshot;
+    private final net.minecraft.server.level.ParticleStatus snapshotParticles;
+    private final double snapshotTilt;
+    private final HitboxMode snapshotHitboxes;
+
     public SettingsScreen(Screen parent) {
         super(Component.literal("Mace PvP Essentials"));
         this.parent = parent;
+        this.snapshot = Config.snapshot();
+        this.snapshotParticles = Minecraft.getInstance().options.particles().get();
+        this.snapshotTilt = Minecraft.getInstance().options.damageTiltStrength().get();
+        this.snapshotHitboxes = Hitboxes.current();
     }
 
     /** Named in fabric.mod.json (custom.kinetic.settings) for the Kinetic screen. */
@@ -208,6 +219,18 @@ public final class SettingsScreen extends Screen {
         offhand.setTooltip(Tooltip.create(Component.literal("Sizes of your offhand shield,\ntotem and the totem pop.")));
         addScrolled(offhand);
 
+        // Presets: Reset (red) and Recommended (green), side by side.
+        Button reset = Button.builder(Component.literal("Reset").withColor(0xFF5555), b -> confirm(
+                "Reset all settings?", "Every setting goes back to its default.", "Reset"))
+                .bounds(pairLeft, PRESETS_TOP + 16, HALF_WIDTH, 20).build();
+        reset.setTooltip(Tooltip.create(Component.literal("Puts every setting back\nto its default.")));
+        addScrolled(reset);
+        Button recommended = Button.builder(Component.literal("Recommended").withColor(0x55FF55), b -> confirm(
+                "Use recommended settings?", "Switches to the settings we recommend for mace PvP.", "Use"))
+                .bounds(pairLeft + HALF_WIDTH + 4, PRESETS_TOP + 16, HALF_WIDTH, 20).build();
+        recommended.setTooltip(Tooltip.create(Component.literal("Our picks for mace PvP.")));
+        addScrolled(recommended);
+
         // Mod off: every setting is greyed out (the mod does nothing until it's switched back on).
         if (!Config.on()) {
             for (AbstractWidget w : scrolled) {
@@ -216,7 +239,7 @@ public final class SettingsScreen extends Screen {
         }
 
         // The mod on/off switch, under the title.
-        ToggleSwitch modSwitch = new ToggleSwitch(this.width / 2 - 23, 27, Config::on, b -> {
+        ToggleSwitch modSwitch = new ToggleSwitch(this.width / 2 - ToggleSwitch.width() / 2, 26, Config::on, b -> {
             Config.get().enabled = !Config.get().enabled;
             Config.save();
             this.rebuildWidgets();
@@ -224,16 +247,11 @@ public final class SettingsScreen extends Screen {
         modSwitch.setTooltip(Tooltip.create(Component.literal("Turns the whole mod on or off.")));
         addRenderableWidget(modSwitch);
 
-        // Bottom: Reset, Done, Recommended.
-        int bottomLeft = this.width / 2 - 151;
-        addRenderableWidget(Button.builder(Component.literal("Reset"), b -> confirm(
-                "Reset all settings?", "Every setting goes back to its default.", "Reset"))
-                .bounds(bottomLeft, this.height - 28, 98, 20).build());
+        // Bottom: Cancel and Done only.
+        addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> confirmCancel())
+                .bounds(this.width / 2 - 102, this.height - 28, 100, 20).build());
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
-                .bounds(bottomLeft + 102, this.height - 28, 98, 20).build());
-        addRenderableWidget(Button.builder(Component.literal("Recommended"), b -> confirm(
-                "Use recommended settings?", "Switches to the settings we recommend for mace PvP.", "Use"))
-                .bounds(bottomLeft + 204, this.height - 28, 98, 20).build());
+                .bounds(this.width / 2 + 2, this.height - 28, 100, 20).build());
         setScroll(scroll);
     }
 
@@ -243,6 +261,25 @@ public final class SettingsScreen extends Screen {
             // TODO: apply reset / recommended settings when answer is true.
             Minecraft.getInstance().gui.setScreen(this);
         }, Component.literal(title), Component.literal(message), Component.literal(yes), Component.literal("Cancel")));
+    }
+
+    /** Cancel: asks first, then puts everything back to how it was when this screen opened. */
+    private void confirmCancel() {
+        Minecraft.getInstance().gui.setScreen(new net.minecraft.client.gui.screens.ConfirmScreen(discard -> {
+            if (discard) {
+                Config.restore(snapshot);
+                Minecraft mc = Minecraft.getInstance();
+                mc.options.particles().set(snapshotParticles);
+                mc.options.damageTiltStrength().set(snapshotTilt);
+                mc.options.save();
+                Hitboxes.set(snapshotHitboxes);
+                mc.gui.setScreen(parent);
+            } else {
+                Minecraft.getInstance().gui.setScreen(this);
+            }
+        }, Component.literal("Discard changes?"),
+                Component.literal("Nothing you changed since opening this menu will be saved."),
+                Component.literal("Discard"), Component.literal("Keep editing")));
     }
 
     private void addScrolled(AbstractWidget widget) {
@@ -410,6 +447,7 @@ public final class SettingsScreen extends Screen {
         section(graphics, "Mace Slots", MACE_SLOTS_TOP - offset);
         section(graphics, "Crosshair", CROSSHAIR_TOP - offset);
         section(graphics, "Game Optimization", OPTIMIZATION_TOP - offset);
+        section(graphics, "Presets", PRESETS_TOP - offset);
         graphics.centeredText(this.font, "Best off when you're not PvPing: they",
                 this.width / 2, OPTIMIZATION_TOP + 13 - offset, 0xFF909090);
         graphics.centeredText(this.font, "change vanilla timing and visuals.",
