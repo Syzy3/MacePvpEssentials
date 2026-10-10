@@ -226,7 +226,8 @@ public final class SettingsScreen extends Screen {
         reset.setTooltip(Tooltip.create(Component.literal("Puts every setting back\nto its default.")));
         addScrolled(reset);
         Button recommended = Button.builder(Component.literal("Recommended").withColor(0x55FF55), b -> confirm(
-                "Use recommended settings?", "Switches to the settings we recommend for mace PvP.", "Use"))
+                "Use recommended settings?", "Switches to the settings we recommend for mace PvP.", "Use",
+                dev.macepvpessentials.config.Presets::applyRecommended))
                 .bounds(pairLeft + HALF_WIDTH + 4, PRESETS_TOP + 16, HALF_WIDTH, 20).build();
         recommended.setTooltip(Tooltip.create(Component.literal("Our picks for mace PvP.")));
         addScrolled(recommended);
@@ -257,8 +258,17 @@ public final class SettingsScreen extends Screen {
 
     /** A yes/no confirm screen. For now both answers just come back here (the presets aren't set up yet). */
     private void confirm(String title, String message, String yes) {
+        confirm(title, message, yes, null);
+    }
+
+    /** A yes/no confirm screen; {@code onYes} runs on yes (null = nothing yet). */
+    private void confirm(String title, String message, String yes, Runnable onYes) {
         Minecraft.getInstance().gui.setScreen(new CancelLeftConfirmScreen(answer -> {
-            // TODO: apply reset / recommended settings when answer is true.
+            if (answer && onYes != null) {
+                onYes.run();
+                // Refresh the screen's Hitboxes choice too.
+                hitboxes = Hitboxes.current();
+            }
             Minecraft.getInstance().gui.setScreen(this);
         }, Component.literal(title), Component.literal(message), Component.literal(yes), Component.literal("Cancel")));
     }
