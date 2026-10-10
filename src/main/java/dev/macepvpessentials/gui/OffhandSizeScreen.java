@@ -146,11 +146,11 @@ public final class OffhandSizeScreen extends Screen {
     private void tickParticles(int x, int y) {
         if (popTicksDone < 30) {
             for (int i = 0; i < 16; i++) {
-                // Around you: mostly the lower part of the view, spread side to side.
-                float px = x + random.nextFloat() * BOX_W;
-                float py = y + BOX_H * (0.35F + random.nextFloat() * 0.65F);
-                float dx = (random.nextFloat() * 2.0F - 1.0F) * 7.0F;
-                float dy = (random.nextFloat() * 2.0F - 1.0F) * 7.0F - 2.0F;
+                // All around you, so they fill the whole view (more toward the middle).
+                float px = x + BOX_W * (0.5F + (random.nextFloat() - random.nextFloat()) * 0.6F);
+                float py = y + BOX_H * (0.55F + (random.nextFloat() - random.nextFloat()) * 0.55F);
+                float dx = (random.nextFloat() * 2.0F - 1.0F) * 10.0F;
+                float dy = (random.nextFloat() * 2.0F - 1.0F) * 10.0F - 3.0F;
                 float r, g, b;
                 if (random.nextInt(4) == 0) {
                     r = 0.6F + random.nextFloat() * 0.2F; g = 0.6F + random.nextFloat() * 0.3F; b = random.nextFloat() * 0.2F;
@@ -168,7 +168,7 @@ public final class OffhandSizeScreen extends Screen {
                 it.remove();
                 continue;
             }
-            p[3] += 0.25F;
+            p[3] += 0.12F;
             p[0] += p[2];
             p[1] += p[3];
             p[2] *= 0.6F;
@@ -202,10 +202,13 @@ public final class OffhandSizeScreen extends Screen {
         // Sparkles behind the totem, like in game.
         for (float[] p : particles) {
             int frame = Math.min(7, (int) (p[4] * 8 / p[5]));
-            int alpha = 255;
+            // Fully visible for the first half of its life, then fades out (like the game).
+            float life = p[4] / p[5];
+            int alpha = life < 0.5F ? 255 : (int) (255 * Math.max(0.0F, 1.0F - (life - 0.5F) * 2.0F));
             int color = alpha << 24 | (int) (p[6] * 255) << 16 | (int) (p[7] * 255) << 8 | (int) (p[8] * 255);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, GLITTER[7 - frame], (int) p[0] - 2, (int) p[1] - 2,
-                    0.0F, 0.0F, 4, 4, 8, 8, 8, 8, color);
+            int size = Math.max(4, BOX_H / 12);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, GLITTER[7 - frame], (int) p[0] - size / 2, (int) p[1] - size / 2,
+                    0.0F, 0.0F, size, size, 8, 8, 8, 8, color);
         }
 
         if (ticks < 40.0F) {
