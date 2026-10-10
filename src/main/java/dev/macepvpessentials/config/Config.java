@@ -35,6 +35,7 @@ public final class Config {
     public boolean pearlOptimization = false;
     public boolean windChargeOptimization = false;
     public boolean rocketOptimization = false;
+    public OpponentDelay opponentDelay = OpponentDelay.VANILLA;
     /** Colored background behind Totems of Undying (off by default). */
     public boolean totemBackground = false;
     public SlotColor totemColor = SlotColor.GREEN;
@@ -106,6 +107,9 @@ public final class Config {
                 loaded.offhandShieldSize = Math.max(10, Math.min(150, loaded.offhandShieldSize == 0 ? 100 : loaded.offhandShieldSize));
                 loaded.offhandTotemSize = Math.max(10, Math.min(150, loaded.offhandTotemSize == 0 ? 100 : loaded.offhandTotemSize));
                 loaded.totemPopSize = Math.max(10, Math.min(150, loaded.totemPopSize == 0 ? 100 : loaded.totemPopSize));
+                if (loaded.opponentDelay == null) {
+                    loaded.opponentDelay = OpponentDelay.VANILLA;
+                }
                 if (loaded.crosshair == null) {
                     loaded.crosshair = new dev.macepvpessentials.crosshair.CrosshairSettings();
                 }

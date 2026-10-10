@@ -38,7 +38,7 @@ public final class SettingsScreen extends Screen {
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 30;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 444;
+    private static final int CONTENT_BOTTOM = 480;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -131,7 +131,7 @@ public final class SettingsScreen extends Screen {
             Config.get().maceOptimization = !Config.get().maceOptimization;
             Config.save();
             b.setMessage(onOff("Mace Optimization", Config.get().maceOptimization));
-        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 16, BUTTON_WIDTH, 20).build();
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 28, BUTTON_WIDTH, 20).build();
         mace.setTooltip(Tooltip.create(Component.literal("Instant smash-hit bounce,\nsound and particles.")));
         addScrolled(mace);
 
@@ -139,7 +139,7 @@ public final class SettingsScreen extends Screen {
             Config.get().pearlOptimization = !Config.get().pearlOptimization;
             Config.save();
             b.setMessage(onOff("Pearl Optimization", Config.get().pearlOptimization));
-        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 40, BUTTON_WIDTH, 20).build();
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 52, BUTTON_WIDTH, 20).build();
         pearl.setTooltip(Tooltip.create(Component.literal("Pearls show instantly.\nServer controls the real one.")));
         addScrolled(pearl);
 
@@ -147,7 +147,7 @@ public final class SettingsScreen extends Screen {
             Config.get().windChargeOptimization = !Config.get().windChargeOptimization;
             Config.save();
             b.setMessage(onOff("Wind Charge Optimization", Config.get().windChargeOptimization));
-        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 64, BUTTON_WIDTH, 20).build();
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 76, BUTTON_WIDTH, 20).build();
         wind.setTooltip(Tooltip.create(Component.literal("Wind charges show instantly.\nServer controls the real one.")));
         addScrolled(wind);
 
@@ -155,9 +155,17 @@ public final class SettingsScreen extends Screen {
             Config.get().rocketOptimization = !Config.get().rocketOptimization;
             Config.save();
             b.setMessage(onOff("Rocket Optimization", Config.get().rocketOptimization));
-        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 88, BUTTON_WIDTH, 20).build();
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 100, BUTTON_WIDTH, 20).build();
         elytra.setTooltip(Tooltip.create(Component.literal("Rocket boosts start instantly.\nStrict anticheats may flag it.")));
         addScrolled(elytra);
+
+        Button opponent = Button.builder(Component.literal("Opponent Delay: " + Config.get().opponentDelay.label()), b -> {
+            Config.get().opponentDelay = Config.get().opponentDelay.next();
+            Config.save();
+            b.setMessage(Component.literal("Opponent Delay: " + Config.get().opponentDelay.label()));
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 124, BUTTON_WIDTH, 20).build();
+        opponent.setTooltip(Tooltip.create(Component.literal("Shows other players closer to\nwhere they really are.")));
+        addScrolled(opponent);
 
         // Visuals: Shield Status, under Hitboxes
         Button shield = Button.builder(onOff("Shield Status", Config.get().shieldStatus), b -> {
@@ -370,6 +378,8 @@ public final class SettingsScreen extends Screen {
         section(graphics, "Mace Slots", MACE_SLOTS_TOP - offset);
         section(graphics, "Crosshair", CROSSHAIR_TOP - offset);
         section(graphics, "Game Optimization", OPTIMIZATION_TOP - offset);
+        graphics.centeredText(this.font, "Recommended: off when you're not PvPing.",
+                this.width / 2, OPTIMIZATION_TOP + 14 - offset, 0xFF909090);
         for (AbstractWidget w : scrolled) {
             w.extractRenderState(graphics, mx, my, delta);
         }

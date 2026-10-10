@@ -12,6 +12,7 @@
     "EntityHitboxDebugRendererAccessor",
     "FireworkRocketEntityMixin",
     "HudMixin",
+    "InterpolationHandlerMixin",
     "ItemInHandRendererMixin",
     "MultiPlayerGameModeMixin",
     "ParticleEngineMixin",
