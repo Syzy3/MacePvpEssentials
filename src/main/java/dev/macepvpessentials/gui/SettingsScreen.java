@@ -164,7 +164,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(Component.literal("Opponent Delay: " + Config.get().opponentDelay.label()));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 134, BUTTON_WIDTH, 20).build();
-        opponent.setTooltip(Tooltip.create(Component.literal("Shows players closer to where\nthey really are, so smashes\nland easier. Less = choppier.")));
+        opponent.setTooltip(Tooltip.create(Component.literal("Shows players where they\nreally are, for better aim.")));
         addScrolled(opponent);
 
         // Visuals: Shield Status, under Hitboxes
