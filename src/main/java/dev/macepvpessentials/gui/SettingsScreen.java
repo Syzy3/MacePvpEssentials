@@ -257,7 +257,7 @@ public final class SettingsScreen extends Screen {
 
     /** A yes/no confirm screen. For now both answers just come back here (the presets aren't set up yet). */
     private void confirm(String title, String message, String yes) {
-        Minecraft.getInstance().gui.setScreen(new net.minecraft.client.gui.screens.ConfirmScreen(answer -> {
+        Minecraft.getInstance().gui.setScreen(new CancelLeftConfirmScreen(answer -> {
             // TODO: apply reset / recommended settings when answer is true.
             Minecraft.getInstance().gui.setScreen(this);
         }, Component.literal(title), Component.literal(message), Component.literal(yes), Component.literal("Cancel")));
@@ -265,7 +265,7 @@ public final class SettingsScreen extends Screen {
 
     /** Cancel: asks first, then puts everything back to how it was when this screen opened. */
     private void confirmCancel() {
-        Minecraft.getInstance().gui.setScreen(new net.minecraft.client.gui.screens.ConfirmScreen(discard -> {
+        Minecraft.getInstance().gui.setScreen(new CancelLeftConfirmScreen(discard -> {
             if (discard) {
                 Config.restore(snapshot);
                 Minecraft mc = Minecraft.getInstance();
