@@ -294,12 +294,14 @@ public final class SettingsScreen extends Screen {
      */
     private static ColorPickerScreen.Preview slotPreview(net.minecraft.resources.Identifier texture) {
         return (graphics, x, y, size, rgb, opacity) -> {
-            graphics.fill(x - 1, y - 1, x + size + 1, y + size + 1, 0xFF000000);
-            graphics.fill(x, y, x + size, y + size, 0xFF8B8B8B);
-            graphics.fill(x, y, x + size, y + size, Config.withOpacity(rgb, opacity));
-            int icon = size - 12;
-            graphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, texture,
-                    x + 6, y + 6, 0.0F, 0.0F, icon, icon, 16, 16, 16, 16);
+            // The world, with a real hotbar slot in front of it, drawn bigger.
+            PreviewScene.world(graphics, x, y, size, size);
+            int scale = Math.max(1, (size - 6) / 22);
+            int slot = 22 * scale;
+            PreviewScene.hotbarSlot(graphics, x + (size - slot) / 2, y + (size - slot) / 2, scale,
+                    Config.withOpacity(rgb, opacity), () -> graphics.blit(
+                            net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, texture,
+                            0, 0, 0.0F, 0.0F, 16, 16, 16, 16, 16, 16));
         };
     }
 

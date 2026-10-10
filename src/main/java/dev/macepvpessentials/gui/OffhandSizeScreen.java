@@ -64,32 +64,42 @@ public final class OffhandSizeScreen extends Screen {
         int x = left();
         drawBox(graphics, x, "Shield", c.offhandShieldSize, true);
         drawBox(graphics, x + BOX_W + GAP, "Totem", c.offhandTotemSize, false);
+        graphics.centeredText(this.font, "The faint copy shows the normal size.", this.width / 2,
+                TOP + BOX_H + 18 + 26, 0xFF808080);
     }
 
-    /** A little first-person view: the item sits in the bottom-left corner, like your offhand. */
+    /**
+     * A little first-person view: the world, Minecraft's crosshair in the middle, and the item in
+     * the bottom-left corner like your offhand. A faint copy shows the normal (100%) size.
+     */
     private void drawBox(GuiGraphicsExtractor graphics, int x, String name, int size, boolean shield) {
         int y = TOP;
-        int sky = y + BOX_H * 60 / 100;
-        graphics.fill(x - 1, y - 1, x + BOX_W + 1, y + BOX_H + 1, 0xFF000000);
-        graphics.fill(x, y, x + BOX_W, sky, 0xFF86A8E8);
-        graphics.fill(x, sky, x + BOX_W, y + BOX_H, 0xFF5E9C3C);
+        PreviewScene.world(graphics, x, y, BOX_W, BOX_H);
         graphics.enableScissor(x, y, x + BOX_W, y + BOX_H);
-        float scale = size / 100.0F;
-        if (shield) {
-            // Base size at 100%: 36 x 66 (3x the 12 x 22 face).
-            int w = Math.round(36 * scale);
-            int h = Math.round(66 * scale);
-            int left = x + 10;
-            int top = y + BOX_H - h + Math.round(14 * scale);
-            graphics.blit(RenderPipelines.GUI_TEXTURED, SHIELD, left, top, 1.0F, 1.0F, w, h, 12, 22, 64, 64);
-        } else {
-            int s = Math.round(56 * scale);
-            int left = x + 8;
-            int top = y + BOX_H - s;
-            graphics.blit(RenderPipelines.GUI_TEXTURED, TOTEM, left, top, 0.0F, 0.0F, s, s, 16, 16, 16, 16);
+        PreviewScene.vanillaCrosshair(graphics, x + BOX_W / 2, y + BOX_H / 2);
+        if (size != 100) {
+            drawItem(graphics, x, y, 1.0F, shield, 0x50FFFFFF);
         }
+        drawItem(graphics, x, y, size / 100.0F, shield, 0xFFFFFFFF);
         graphics.disableScissor();
         graphics.centeredText(this.font, name, x + BOX_W / 2, y + BOX_H + 5, 0xFFA0A0A0);
+    }
+
+    /** The item anchored at the hand (bottom-left), so it shrinks and grows toward it like in game. */
+    private static void drawItem(GuiGraphicsExtractor graphics, int x, int y, float scale, boolean shield, int color) {
+        if (shield) {
+            // 100%: 36 x 66 (3x the 12 x 22 face), partly below the bottom edge like in game.
+            int w = Math.round(36 * scale);
+            int h = Math.round(66 * scale);
+            int left = x + Math.round(14 * scale);
+            int top = y + BOX_H - h + Math.round(14 * scale);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, SHIELD, left, top, 1.0F, 1.0F, w, h, 12, 22, 64, 64, color);
+        } else {
+            int s = Math.round(56 * scale);
+            int left = x + Math.round(10 * scale);
+            int top = y + BOX_H - s + Math.round(6 * scale);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, TOTEM, left, top, 0.0F, 0.0F, s, s, 16, 16, 16, 16, color);
+        }
     }
 
     @Override

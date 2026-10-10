@@ -165,15 +165,19 @@ public final class CrosshairEditorScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, delta);
         graphics.centeredText(this.font, this.title, this.width / 2, 12, -1);
         drawPreview(graphics, this.s(), this.left() + 216 + 12, 30, 96, 118, this.s().rgb());
+        // The same crosshair at its real in-game size, under the elytra button.
+        int ix = this.left() + 216 + 12 + 96 + 4;
+        int iy = 30 + 20 + 6;
+        PreviewScene.world(graphics, ix, iy, 40, 40);
+        float demoCooldown = (float)(System.currentTimeMillis() % 1600L) / 1600.0F;
+        graphics.enableScissor(ix, iy, ix + 40, iy + 40);
+        CrosshairRenderer.draw(graphics, this.s(), ix + 20, iy + 20, this.s().rgb(), demoCooldown, previewElytra());
+        graphics.disableScissor();
+        graphics.centeredText(this.font, "Real size", ix + 20, iy + 44, 0xFFA0A0A0);
     }
 
     static void drawPreview(GuiGraphicsExtractor graphics, CrosshairSettings s, int px, int py, int w, int h, int rgb) {
-        int sky = py + h * 55 / 100;
-        int grass = sky + h * 20 / 100;
-        graphics.fill(px - 1, py - 1, px + w + 1, py + h + 1, -16777216);
-        graphics.fill(px, py, px + w, sky, -7951896);
-        graphics.fill(px, sky, px + w, grass, -10577348);
-        graphics.fill(px, grass, px + w, py + h, -8750470);
+        PreviewScene.world(graphics, px, py, w, h);
         int reach = CrosshairRenderer.reach(s);
         // Always leave room for the elytra icon so the preview size never jumps.
         int across = reach + 11;
