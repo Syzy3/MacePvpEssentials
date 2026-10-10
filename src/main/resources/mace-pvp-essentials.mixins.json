@@ -13,6 +13,7 @@
     "FireworkRocketEntityMixin",
     "HudMixin",
     "MultiPlayerGameModeMixin",
+    "ParticleEngineMixin",
     "ShieldSpecialRendererMixin",
     "SpecialModelWrapperMixin",
     "ThrownEnderpearlMixin"

@@ -30,15 +30,15 @@ public final class SettingsScreen extends Screen {
     private static final int BUTTON_WIDTH = 200;
     private static final int SECTION_WIDTH = 260;
     private static final int VISUALS_TOP = 40;
-    private static final int MACE_SLOTS_TOP = 136;
-    private static final int CROSSHAIR_TOP = 184;
-    private static final int OPTIMIZATION_TOP = 256;
+    private static final int MACE_SLOTS_TOP = 184;
+    private static final int CROSSHAIR_TOP = 232;
+    private static final int OPTIMIZATION_TOP = 304;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 30;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 372;
+    private static final int CONTENT_BOTTOM = 420;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -176,6 +176,23 @@ public final class SettingsScreen extends Screen {
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 64, BUTTON_WIDTH, 20).build();
         totemButton.setTooltip(Tooltip.create(Component.literal("Colors totem slots.\nRight-click: custom color.")));
         addScrolled(totemButton);
+
+        // Visuals: Particles (Minecraft's option, plus None) and Damage Tilt (Minecraft's
+        // Accessibility option), so changes show up in Minecraft's menus too.
+        Button particles = Button.builder(Component.literal("Particles: " + dev.macepvpessentials.Particles.current().label()), b -> {
+            dev.macepvpessentials.Particles.Level next = dev.macepvpessentials.Particles.current().next();
+            dev.macepvpessentials.Particles.set(next);
+            b.setMessage(Component.literal("Particles: " + next.label()));
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 88, BUTTON_WIDTH, 20).build();
+        particles.setTooltip(Tooltip.create(Component.literal("How many particles show.\nSame as Minecraft's setting.")));
+        addScrolled(particles);
+
+        int tilt = (int) Math.round(Minecraft.getInstance().options.damageTiltStrength().get() * 100.0);
+        IntSlider damageTilt = new IntSlider(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 112, BUTTON_WIDTH, 20,
+                "Damage Tilt", 1, 100, Math.max(1, tilt), v -> v + "%",
+                v -> Minecraft.getInstance().options.damageTiltStrength().set(v / 100.0));
+        damageTilt.setTooltip(Tooltip.create(Component.literal("How much the screen shakes\nwhen you get hurt.")));
+        addScrolled(damageTilt);
 
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
                 .bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());
@@ -384,6 +401,7 @@ public final class SettingsScreen extends Screen {
     @Override
     public void onClose() {
         Config.save();
+        Minecraft.getInstance().options.save();
         Minecraft.getInstance().gui.setScreen(parent);
     }
 }

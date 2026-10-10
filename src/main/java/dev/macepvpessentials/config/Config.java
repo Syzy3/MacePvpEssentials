@@ -23,6 +23,8 @@ public final class Config {
     public SlotColor breachColor = SlotColor.LIGHT_BLUE;
     public SlotColor densityColor = SlotColor.DARK_BLUE;
     public boolean shieldStatus = true;
+    /** Particles: None (Minecraft's option stays on Minimal). */
+    public boolean particlesNone = false;
     /** Game Optimization (both off by default). */
     public boolean maceOptimization = false;
     public boolean pearlOptimization = false;
