@@ -13,6 +13,19 @@ public final class Presets {
     private Presets() {
     }
 
+    /**
+     * Reset: every mod setting back to its default (everything off, Minecraft's own crosshair,
+     * normal sizes), and Minecraft's own Hitboxes, Particles and Damage Tilt back to their
+     * defaults (off, All, 100%). The mod stays switched on.
+     */
+    public static void applyReset() {
+        Config.resetToDefaults();
+        Hitboxes.set(HitboxMode.OFF);
+        Particles.set(Particles.Level.ALL);
+        Minecraft.getInstance().options.damageTiltStrength().set(1.0);
+        Minecraft.getInstance().options.save();
+    }
+
     /** Switches every setting to the recommended ones (custom colors you picked are kept). */
     public static void applyRecommended() {
         Config c = Config.get();

@@ -100,6 +100,12 @@ public final class Config {
         }
     }
 
+    /** Every mod setting back to its default, saved. */
+    public static void resetToDefaults() {
+        current = new Config();
+        save();
+    }
+
     public static Config get() {
         return current;
     }

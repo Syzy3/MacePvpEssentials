@@ -221,7 +221,8 @@ public final class SettingsScreen extends Screen {
 
         // Presets: Reset (red) and Recommended (green), side by side.
         Button reset = Button.builder(Component.literal("Reset").withColor(0xFF5555), b -> confirm(
-                "Reset all settings?", "Every setting goes back to its default.", "Reset"))
+                "Reset all settings?", "Every setting goes back to its default.", "Reset",
+                dev.macepvpessentials.config.Presets::applyReset))
                 .bounds(pairLeft, PRESETS_TOP + 16, HALF_WIDTH, 20).build();
         reset.setTooltip(Tooltip.create(Component.literal("Puts every setting back\nto its default.")));
         addScrolled(reset);
