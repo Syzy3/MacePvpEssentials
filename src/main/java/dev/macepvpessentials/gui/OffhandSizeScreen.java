@@ -231,7 +231,10 @@ public final class OffhandSizeScreen extends Screen {
             graphics.pose().pushMatrix();
             graphics.pose().translate(px, py);
             graphics.pose().rotate(tilt);
-            graphics.pose().scale(sizePx / 16.0F * (float) Math.cos(spin), sizePx / 16.0F);
+            // Never a negative width: a flipped picture isn't drawn at all, which hid the totem
+            // exactly when it was biggest. A little minimum width stands in for its 3D thickness.
+            float width = Math.max(0.12F, Math.abs((float) Math.cos(spin)));
+            graphics.pose().scale(sizePx / 16.0F * width, sizePx / 16.0F);
             graphics.blit(RenderPipelines.GUI_TEXTURED, TOTEM, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16, 16, 16);
             graphics.pose().popMatrix();
         } else if (particles.isEmpty()) {
