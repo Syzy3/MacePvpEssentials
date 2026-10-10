@@ -33,13 +33,13 @@ public final class SettingsScreen extends Screen {
     private static final int MACE_SLOTS_TOP = 220;
     private static final int CROSSHAIR_TOP = 268;
     private static final int OPTIMIZATION_TOP = 340;
-    private static final int PRESETS_TOP = 510;
+    private static final int PRESETS_TOP = 534;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 44;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 554;
+    private static final int CONTENT_BOTTOM = 578;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -177,6 +177,14 @@ public final class SettingsScreen extends Screen {
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 134, BUTTON_WIDTH, 20).build();
         opponent.setTooltip(Tooltip.create(Component.literal("Shows players where they\nreally are, for better aim.")));
         addScrolled(opponent);
+
+        Button combatFps = Button.builder(onOff("Combat FPS", Config.get().combatFps), b -> {
+            Config.get().combatFps = !Config.get().combatFps;
+            Config.save();
+            b.setMessage(onOff("Combat FPS", Config.get().combatFps));
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 158, BUTTON_WIDTH, 20).build();
+        combatFps.setTooltip(Tooltip.create(Component.literal("More FPS: no clouds, shadows,\nor others' totem particles.")));
+        addScrolled(combatFps);
 
         // Visuals: Shield Status, under Hitboxes
         Button shield = Button.builder(onOff("Shield Status", Config.get().shieldStatus), b -> {

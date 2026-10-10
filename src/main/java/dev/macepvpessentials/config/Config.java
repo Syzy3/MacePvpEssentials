@@ -38,6 +38,8 @@ public final class Config {
     public boolean windChargeOptimization = false;
     public boolean rocketOptimization = false;
     public OpponentDelay opponentDelay = OpponentDelay.VANILLA;
+    /** Combat FPS: no clouds, no entity shadows, fewer heavy fight particles. */
+    public boolean combatFps = false;
     /** Colored background behind Totems of Undying (off by default). */
     public boolean totemBackground = false;
     public SlotColor totemColor = SlotColor.GREEN;
