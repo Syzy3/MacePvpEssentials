@@ -9,7 +9,7 @@ import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-/** Elytra Optimization: the real rocket skips the boost ticks its stand-in already gave. */
+/** Rocket Optimization: the real rocket skips the boost ticks its stand-in already gave. */
 @Mixin(FireworkRocketEntity.class)
 public abstract class FireworkRocketEntityMixin {
 

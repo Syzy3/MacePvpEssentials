@@ -51,7 +51,7 @@ public final class CrosshairEditorScreen extends Screen {
         // Column 1: the crosshair's shape and color.
         this.cycle(col1, row(0), "Style", (st) -> st.style.label(), (st) -> st.style = st.style.next());
         this.colorButton = this.cycle(col1, row(1), "Color", (st) -> st.color.label(), (st) -> st.color = st.color.next());
-        this.colorButton.setTooltip(Tooltip.create(Component.literal("Right-click for a custom color.")));
+        this.colorButton.setTooltip(Tooltip.create(Component.literal("Right-click: custom color.")));
         this.addRenderableWidget(new IntSlider(col1, row(2), 108, 18, "Opacity", 10, 100, s.opacity, (v) -> v + "%", (v) -> { s.opacity = Math.max(10, Math.round((float)v / 5.0F) * 5); Config.save(); }));
         this.addRenderableWidget(new IntSlider(col1, row(3), 108, 18, "Length", 1, 12, s.length, Integer::toString, (v) -> { s.length = v; Config.save(); }));
         this.addRenderableWidget(new IntSlider(col1, row(4), 108, 18, "Thickness", 1, 6, s.thickness, Integer::toString, (v) -> { s.thickness = v; Config.save(); }));
@@ -64,16 +64,16 @@ public final class CrosshairEditorScreen extends Screen {
             Config.save();
             btn.setMessage(targetLabel(s));
         }).bounds(col2, row(2), 108, 18).build());
-        this.targetButton.setTooltip(Tooltip.create(Component.literal("Color while aiming at a player. Right-click for a custom color.")));
-        this.toggle(col2, row(3), "Cooldown", () -> s.showCooldown, (v) -> s.showCooldown = v, "Shows your mace's attack charge, or the held item's cooldown.");
+        this.targetButton.setTooltip(Tooltip.create(Component.literal("Color when aiming at a player.\nRight-click: custom color.")));
+        this.toggle(col2, row(3), "Cooldown", () -> s.showCooldown, (v) -> s.showCooldown = v, "Shows your mace's charge\nor item cooldown.");
         ElytraPreviewButton elytraButton = new ElytraPreviewButton(col1 + 216 + 12 + 96 + 4, 30, 20, () -> simulateElytra, (b) -> simulateElytra = !simulateElytra);
-        elytraButton.setTooltip(Tooltip.create(Component.literal("Shows the preview as if you're wearing an elytra.")));
+        elytraButton.setTooltip(Tooltip.create(Component.literal("Preview as if you're\nwearing an elytra.")));
         elytraButton.visible = s.showElytra;
         this.toggle(col2, row(4), "Elytra", () -> s.showElytra, (v) -> {
             s.showElytra = v;
             elytraButton.visible = v;
-        }, "Shows an elytra icon while you wear one.");
-        this.toggle(col2, row(5), "Third Person", () -> s.thirdPerson, (v) -> s.thirdPerson = v, "Also shows the crosshair in third person (F5).");
+        }, "Shows an elytra icon\nwhile you wear one.");
+        this.toggle(col2, row(5), "Third Person", () -> s.thirdPerson, (v) -> s.thirdPerson = v, "Also shows the crosshair\nin third person (F5).");
         this.addRenderableWidget(elytraButton);
         this.addRenderableWidget(Button.builder(Component.literal("Reset"), (b) -> {
             boolean custom = this.s().custom;

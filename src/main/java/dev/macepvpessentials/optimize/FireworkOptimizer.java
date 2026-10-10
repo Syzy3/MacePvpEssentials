@@ -20,7 +20,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Elytra Optimization. A rocket boost normally starts only once the server's rocket reaches
+ * Rocket Optimization. A rocket boost normally starts only once the server's rocket reaches
  * you, one ping after you use it. This starts the boost the moment you use the rocket with a
  * stand-in rocket (same push as vanilla). When the server's real rocket arrives it takes over,
  * and it skips as many boost ticks as the stand-in already gave, so the total boost is the
@@ -59,7 +59,7 @@ public final class FireworkOptimizer {
 
     /** Whether using this item right now should start a boost early. */
     public static boolean handles(Player player, ItemStack stack) {
-        return Config.get().elytraOptimization && stack.is(Items.FIREWORK_ROCKET) && player.isFallFlying();
+        return Config.get().rocketOptimization && stack.is(Items.FIREWORK_ROCKET) && player.isFallFlying();
     }
 
     public static boolean isStandIn(Entity entity) {

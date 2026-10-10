@@ -78,7 +78,7 @@ public final class SettingsScreen extends Screen {
             Hitboxes.set(hitboxes);
             b.setMessage(Component.literal("Hitboxes: " + hitboxes.label()));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 16, BUTTON_WIDTH, 20).build();
-        hitboxButton.setTooltip(Tooltip.create(Component.literal("Shows the hitboxes of players and mobs.")));
+        hitboxButton.setTooltip(Tooltip.create(Component.literal("Shows player and mob hitboxes.")));
         addScrolled(hitboxButton);
 
         // Mace Slots: two buttons side by side.
@@ -95,7 +95,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(breachLabel());
         }).bounds(pairLeft, MACE_SLOTS_TOP + 16, HALF_WIDTH, 20).build();
-        breachButton.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Breach mace. Right-click for a custom color.")));
+        breachButton.setTooltip(Tooltip.create(Component.literal("Colors Breach mace slots.\nRight-click: custom color.")));
         addScrolled(breachButton);
 
         densityButton = Button.builder(densityLabel(), b -> {
@@ -108,7 +108,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(densityLabel());
         }).bounds(pairLeft + HALF_WIDTH + 4, MACE_SLOTS_TOP + 16, HALF_WIDTH, 20).build();
-        densityButton.setTooltip(Tooltip.create(Component.literal("Colors the slot of a Density mace. Right-click for a custom color.")));
+        densityButton.setTooltip(Tooltip.create(Component.literal("Colors Density mace slots.\nRight-click: custom color.")));
         addScrolled(densityButton);
 
         // Crosshair: Default Crosshair on = Minecraft's own crosshair, so the editor is greyed out.
@@ -122,7 +122,7 @@ public final class SettingsScreen extends Screen {
             b.setMessage(onOff("Default Crosshair", !Config.get().crosshair.custom));
             edit.active = Config.get().crosshair.custom;
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, CROSSHAIR_TOP + 16, BUTTON_WIDTH, 20).build();
-        defaultCrosshair.setTooltip(Tooltip.create(Component.literal("Uses Minecraft's normal crosshair. Turn off to make your own.")));
+        defaultCrosshair.setTooltip(Tooltip.create(Component.literal("Minecraft's normal crosshair.\nTurn off to make your own.")));
         addScrolled(defaultCrosshair);
         addScrolled(edit);
 
@@ -132,7 +132,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(onOff("Mace Optimization", Config.get().maceOptimization));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 16, BUTTON_WIDTH, 20).build();
-        mace.setTooltip(Tooltip.create(Component.literal("Your smash-hit bounce happens instantly instead of waiting for the server.")));
+        mace.setTooltip(Tooltip.create(Component.literal("Instant smash-hit bounce,\nsound and particles.")));
         addScrolled(mace);
 
         Button pearl = Button.builder(onOff("Pearl Optimization", Config.get().pearlOptimization), b -> {
@@ -140,7 +140,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(onOff("Pearl Optimization", Config.get().pearlOptimization));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 40, BUTTON_WIDTH, 20).build();
-        pearl.setTooltip(Tooltip.create(Component.literal("Your pearl shows the moment you throw it. The server still controls the real pearl.")));
+        pearl.setTooltip(Tooltip.create(Component.literal("Pearls show instantly.\nServer controls the real one.")));
         addScrolled(pearl);
 
         Button wind = Button.builder(onOff("Wind Charge Optimization", Config.get().windChargeOptimization), b -> {
@@ -148,15 +148,15 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(onOff("Wind Charge Optimization", Config.get().windChargeOptimization));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 64, BUTTON_WIDTH, 20).build();
-        wind.setTooltip(Tooltip.create(Component.literal("Your wind charge shows the moment you throw it. The server still controls the real one.")));
+        wind.setTooltip(Tooltip.create(Component.literal("Wind charges show instantly.\nServer controls the real one.")));
         addScrolled(wind);
 
-        Button elytra = Button.builder(onOff("Elytra Optimization", Config.get().elytraOptimization), b -> {
-            Config.get().elytraOptimization = !Config.get().elytraOptimization;
+        Button elytra = Button.builder(onOff("Rocket Optimization", Config.get().rocketOptimization), b -> {
+            Config.get().rocketOptimization = !Config.get().rocketOptimization;
             Config.save();
-            b.setMessage(onOff("Elytra Optimization", Config.get().elytraOptimization));
+            b.setMessage(onOff("Rocket Optimization", Config.get().rocketOptimization));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 88, BUTTON_WIDTH, 20).build();
-        elytra.setTooltip(Tooltip.create(Component.literal("Rocket boosts start the moment you use them. Strict anticheats may flag this.")));
+        elytra.setTooltip(Tooltip.create(Component.literal("Rocket boosts start instantly.\nStrict anticheats may flag it.")));
         addScrolled(elytra);
 
         // Visuals: Shield Status, under Hitboxes
@@ -165,7 +165,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(onOff("Shield Status", Config.get().shieldStatus));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 40, BUTTON_WIDTH, 20).build();
-        shield.setTooltip(Tooltip.create(Component.literal("Shields are green when ready and red when disabled.")));
+        shield.setTooltip(Tooltip.create(Component.literal("Green when ready,\nred when disabled.")));
         addScrolled(shield);
 
         // Visuals: Totem Background, under Shield Status
@@ -174,7 +174,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(totemLabel());
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 64, BUTTON_WIDTH, 20).build();
-        totemButton.setTooltip(Tooltip.create(Component.literal("Colors the slot of a totem. Right-click for a custom color.")));
+        totemButton.setTooltip(Tooltip.create(Component.literal("Colors totem slots.\nRight-click: custom color.")));
         addScrolled(totemButton);
 
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
