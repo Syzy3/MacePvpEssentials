@@ -68,4 +68,10 @@ public abstract class HudMixin {
         CrosshairSettings s = Config.get().crosshair;
         return original.call(type) || (Config.on() && s.custom && s.thirdPerson);
     }
+
+    /** Smash Damage meter, drawn after the crosshair (so only when the crosshair shows). */
+    @Inject(method = "extractCrosshair", at = @At("TAIL"))
+    private void macepvpessentials$smashMeter(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+        dev.macepvpessentials.SmashMeter.draw(graphics, graphics.guiWidth() / 2, graphics.guiHeight() / 2);
+    }
 }

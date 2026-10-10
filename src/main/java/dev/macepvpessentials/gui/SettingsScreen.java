@@ -31,15 +31,16 @@ public final class SettingsScreen extends Screen {
     private static final int SECTION_WIDTH = 260;
     private static final int VISUALS_TOP = 52;
     private static final int MACE_SLOTS_TOP = 220;
-    private static final int CROSSHAIR_TOP = 268;
-    private static final int OPTIMIZATION_TOP = 340;
-    private static final int PRESETS_TOP = 534;
+    private static final int SMASH_TOP = 268;
+    private static final int CROSSHAIR_TOP = 316;
+    private static final int OPTIMIZATION_TOP = 388;
+    private static final int PRESETS_TOP = 582;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 44;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 578;
+    private static final int CONTENT_BOTTOM = 626;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -122,6 +123,24 @@ public final class SettingsScreen extends Screen {
         densityButton.setTooltip(Tooltip.create(Component.literal("Colors Density mace slots.\nRight-click: custom color.")));
         addScrolled(densityButton);
 
+        // Smash Damage: on/off, and where the number shows (only while it's on).
+        Button smashPosition = Button.builder(Component.literal("Position: " + Config.get().smashMeterPosition.label()), b -> {
+            Config.get().smashMeterPosition = Config.get().smashMeterPosition.next();
+            Config.save();
+            b.setMessage(Component.literal("Position: " + Config.get().smashMeterPosition.label()));
+        }).bounds(pairLeft + HALF_WIDTH + 4, SMASH_TOP + 16, HALF_WIDTH, 20).build();
+        smashPosition.setTooltip(Tooltip.create(Component.literal("Where the number shows\nnext to your crosshair.")));
+        smashPosition.active = Config.get().smashMeter;
+        Button smash = Button.builder(onOff("Smash Damage", Config.get().smashMeter), b -> {
+            Config.get().smashMeter = !Config.get().smashMeter;
+            Config.save();
+            b.setMessage(onOff("Smash Damage", Config.get().smashMeter));
+            smashPosition.active = Config.get().smashMeter;
+        }).bounds(pairLeft, SMASH_TOP + 16, HALF_WIDTH, 20).build();
+        smash.setTooltip(Tooltip.create(Component.literal("Shows your smash damage in\nhearts while you fall.")));
+        addScrolled(smash);
+        addScrolled(smashPosition);
+
         // Crosshair: Default Crosshair on = Minecraft's own crosshair, so the editor is greyed out.
         Button edit = Button.builder(Component.literal("Edit Crosshair..."),
                 b -> Minecraft.getInstance().gui.setScreen(new CrosshairEditorScreen(this)))
@@ -183,7 +202,7 @@ public final class SettingsScreen extends Screen {
             Config.save();
             b.setMessage(onOff("Combat FPS", Config.get().combatFps));
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, OPTIMIZATION_TOP + 158, BUTTON_WIDTH, 20).build();
-        combatFps.setTooltip(Tooltip.create(Component.literal("More FPS: no clouds, shadows,\nor others' totem particles.")));
+        combatFps.setTooltip(Tooltip.create(Component.literal("Lighter video settings.\nYour own settings are kept.")));
         addScrolled(combatFps);
 
         // Visuals: Shield Status, under Hitboxes
@@ -464,6 +483,7 @@ public final class SettingsScreen extends Screen {
         graphics.enableScissor(0, LIST_TOP, this.width, listBottom());
         section(graphics, "Visuals", VISUALS_TOP - offset);
         section(graphics, "Mace Slots", MACE_SLOTS_TOP - offset);
+        section(graphics, "Smash Damage", SMASH_TOP - offset);
         section(graphics, "Crosshair", CROSSHAIR_TOP - offset);
         section(graphics, "Game Optimization", OPTIMIZATION_TOP - offset);
         section(graphics, "Presets", PRESETS_TOP - offset);

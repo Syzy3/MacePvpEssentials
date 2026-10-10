@@ -38,8 +38,11 @@ public final class Config {
     public boolean windChargeOptimization = false;
     public boolean rocketOptimization = false;
     public OpponentDelay opponentDelay = OpponentDelay.VANILLA;
-    /** Combat FPS: no clouds, no entity shadows, fewer heavy fight particles. */
+    /** Combat FPS: lighter video settings while on (your own settings are kept). */
     public boolean combatFps = false;
+    /** Smash Damage meter next to the crosshair. */
+    public boolean smashMeter = false;
+    public SmashPosition smashMeterPosition = SmashPosition.BELOW;
     /** Colored background behind Totems of Undying (off by default). */
     public boolean totemBackground = false;
     public SlotColor totemColor = SlotColor.GREEN;
@@ -136,6 +139,9 @@ public final class Config {
                 loaded.offhandShieldSize = Math.max(10, Math.min(150, loaded.offhandShieldSize == 0 ? 100 : loaded.offhandShieldSize));
                 loaded.offhandTotemSize = Math.max(10, Math.min(150, loaded.offhandTotemSize == 0 ? 100 : loaded.offhandTotemSize));
                 loaded.totemPopSize = Math.max(10, Math.min(150, loaded.totemPopSize == 0 ? 100 : loaded.totemPopSize));
+                if (loaded.smashMeterPosition == null) {
+                    loaded.smashMeterPosition = SmashPosition.BELOW;
+                }
                 if (loaded.opponentDelay == null) {
                     loaded.opponentDelay = OpponentDelay.VANILLA;
                 }

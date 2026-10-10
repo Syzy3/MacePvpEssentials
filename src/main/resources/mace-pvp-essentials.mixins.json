@@ -18,6 +18,8 @@
     "InterpolationHandlerMixin",
     "ItemInHandRendererMixin",
     "MultiPlayerGameModeMixin",
+    "OptionInstanceMixin",
+    "OptionsSaveMixin",
     "ParticleEngineMixin",
     "ScreenEffectRendererMixin",
     "ShieldSpecialRendererMixin",
