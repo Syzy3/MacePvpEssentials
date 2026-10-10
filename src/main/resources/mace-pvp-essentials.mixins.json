@@ -15,6 +15,7 @@
     "ItemInHandRendererMixin",
     "MultiPlayerGameModeMixin",
     "ParticleEngineMixin",
+    "ScreenEffectRendererMixin",
     "ShieldSpecialRendererMixin",
     "SpecialModelWrapperMixin",
     "ThrownEnderpearlMixin"

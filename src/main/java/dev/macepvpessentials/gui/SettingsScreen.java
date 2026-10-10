@@ -194,10 +194,10 @@ public final class SettingsScreen extends Screen {
         damageTilt.setTooltip(Tooltip.create(Component.literal("How much the screen shakes\nwhen you get hurt.")));
         addScrolled(damageTilt);
 
-        Button offhand = Button.builder(Component.literal("Offhand Size..."),
+        Button offhand = Button.builder(Component.literal("Offhand & Totem Pop..."),
                 b -> Minecraft.getInstance().gui.setScreen(new OffhandSizeScreen(this)))
                 .bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 136, BUTTON_WIDTH, 20).build();
-        offhand.setTooltip(Tooltip.create(Component.literal("Sizes of a shield and a totem\nin your offhand.")));
+        offhand.setTooltip(Tooltip.create(Component.literal("Sizes of your offhand shield,\ntotem and the totem pop.")));
         addScrolled(offhand);
 
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())

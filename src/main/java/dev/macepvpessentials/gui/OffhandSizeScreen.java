@@ -10,17 +10,17 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 
 /**
- * Offhand Size: separate sizes for a shield and a totem held in your offhand (first person),
- * with a preview of each. The preview draws Minecraft's own textures, so it works from the
+ * Offhand & Totem Pop: separate sizes for a shield and a totem held in your offhand (first
+ * person) and for the totem pop animation, with a preview of each (the pop plays on a loop). The preview draws Minecraft's own textures, so it works from the
  * title screen too.
  */
 public final class OffhandSizeScreen extends Screen {
 
-    private static final int BOX_W = 120;
+    private static final int BOX_W = 110;
     private static final int BOX_H = 96;
-    private static final int GAP = 12;
+    private static final int GAP = 8;
     private static final int TOP = 30;
-    private static final int SLIDER_W = 120;
+    private static final int SLIDER_W = 110;
 
     private static final Identifier TOTEM = Identifier.withDefaultNamespace("textures/item/totem_of_undying.png");
     /** The shield's front face is 12x22 pixels at (1, 1) in this 64x64 texture. */
@@ -29,12 +29,12 @@ public final class OffhandSizeScreen extends Screen {
     private final Screen parent;
 
     public OffhandSizeScreen(Screen parent) {
-        super(Component.literal("Offhand Size"));
+        super(Component.literal("Offhand & Totem Pop"));
         this.parent = parent;
     }
 
     private int left() {
-        return this.width / 2 - BOX_W - GAP / 2;
+        return this.width / 2 - (3 * BOX_W + 2 * GAP) / 2;
     }
 
     @Override
@@ -46,9 +46,12 @@ public final class OffhandSizeScreen extends Screen {
                 v -> v + "%", v -> c.offhandShieldSize = v));
         this.addRenderableWidget(new IntSlider(x + BOX_W + GAP, y, SLIDER_W, 20, "Totem", 10, 150, c.offhandTotemSize,
                 v -> v + "%", v -> c.offhandTotemSize = v));
+        this.addRenderableWidget(new IntSlider(x + 2 * (BOX_W + GAP), y, SLIDER_W, 20, "Pop", 10, 150, c.totemPopSize,
+                v -> v + "%", v -> c.totemPopSize = v));
         this.addRenderableWidget(Button.builder(Component.literal("Reset"), b -> {
             c.offhandShieldSize = 100;
             c.offhandTotemSize = 100;
+            c.totemPopSize = 100;
             Config.save();
             this.rebuildWidgets();
         }).bounds(this.width / 2 - 102, this.height - 26, 100, 18).build());
@@ -64,6 +67,7 @@ public final class OffhandSizeScreen extends Screen {
         int x = left();
         drawBox(graphics, x, "Shield", c.offhandShieldSize, true);
         drawBox(graphics, x + BOX_W + GAP, "Totem", c.offhandTotemSize, false);
+        drawPop(graphics, x + 2 * (BOX_W + GAP), c.totemPopSize);
         graphics.centeredText(this.font, "The faint copy shows the normal size.", this.width / 2,
                 TOP + BOX_H + 18 + 26, 0xFF808080);
     }
@@ -100,6 +104,61 @@ public final class OffhandSizeScreen extends Screen {
             int top = y + BOX_H - s + Math.round(6 * scale);
             graphics.blit(RenderPipelines.GUI_TEXTURED, TOTEM, left, top, 0.0F, 0.0F, s, s, 16, 16, 16, 16, color);
         }
+    }
+
+    /** Each loop: 2 seconds of pop (40 ticks, like the game) and a short pause. */
+    private static final long POP_LOOP_MS = 2600L;
+    private long popLoop = -1;
+    private float popOffX;
+    private float popOffY;
+
+    /**
+     * The totem pop, playing over and over. Same math as Minecraft's: the totem flies toward the
+     * screen, spins and drifts off to a random side, then shrinks away. Box = a small screen.
+     */
+    private void drawPop(GuiGraphicsExtractor graphics, int x, int sizePercent) {
+        int y = TOP;
+        PreviewScene.world(graphics, x, y, BOX_W, BOX_H);
+        graphics.enableScissor(x, y, x + BOX_W, y + BOX_H);
+        PreviewScene.vanillaCrosshair(graphics, x + BOX_W / 2, y + BOX_H / 2);
+
+        long now = System.currentTimeMillis();
+        long loop = now / POP_LOOP_MS;
+        if (loop != popLoop) {
+            // A new pop: random drift, like the game.
+            popLoop = loop;
+            java.util.Random random = new java.util.Random(loop * 31 + 7);
+            popOffX = random.nextFloat() * 2.0F - 1.0F;
+            popOffY = random.nextFloat() * 2.0F - 1.0F;
+        }
+        float ticks = (now % POP_LOOP_MS) / 50.0F;
+        if (ticks < 40.0F) {
+            float t = ticks / 40.0F;
+            float ts = t * t;
+            float tc = t * ts;
+            float smooth = 10.25F * tc * ts - 24.95F * ts * ts + 25.5F * tc - 13.8F * ts + 4.0F * t;
+            float pi = smooth * (float) Math.PI;
+            // Distance from the camera (-10 + 9 sin), 70 degree view: tan(35) ~ 0.7.
+            float depth = Math.max(0.5F, 10.0F - 9.0F * (float) Math.sin(pi));
+            float aspect = (float) BOX_W / BOX_H;
+            float drift = Math.abs((float) Math.sin(pi * 2.0F));
+            float ndcX = popOffX * 0.3F * aspect * drift / (depth * 0.7F * aspect);
+            float ndcY = popOffY * 0.3F * drift / (depth * 0.7F);
+            float px = x + BOX_W / 2.0F + ndcX * BOX_W / 2.0F;
+            float py = y + BOX_H / 2.0F - ndcY * BOX_H / 2.0F;
+            float sizePx = 0.8F * (sizePercent / 100.0F) / (depth * 0.7F) * BOX_H / 2.0F;
+            // The spin: 900 degrees around the up axis shows as the totem getting thin and flipping.
+            float spin = (float) Math.toRadians(900.0F * Math.abs(Math.sin(pi)));
+            float tilt = (float) Math.toRadians(6.0F * Math.cos(t * 8.0F));
+            graphics.pose().pushMatrix();
+            graphics.pose().translate(px, py);
+            graphics.pose().rotate(tilt);
+            graphics.pose().scale(sizePx / 16.0F * (float) Math.cos(spin), sizePx / 16.0F);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, TOTEM, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16, 16, 16);
+            graphics.pose().popMatrix();
+        }
+        graphics.disableScissor();
+        graphics.centeredText(this.font, "Totem Pop", x + BOX_W / 2, y + BOX_H + 5, 0xFFA0A0A0);
     }
 
     @Override

@@ -28,6 +28,8 @@ public final class Config {
     /** Offhand Size, in percent (first person). */
     public int offhandShieldSize = 100;
     public int offhandTotemSize = 100;
+    /** Totem pop animation size, in percent. */
+    public int totemPopSize = 100;
     /** Game Optimization (both off by default). */
     public boolean maceOptimization = false;
     public boolean pearlOptimization = false;
@@ -103,6 +105,7 @@ public final class Config {
                 }
                 loaded.offhandShieldSize = Math.max(10, Math.min(150, loaded.offhandShieldSize == 0 ? 100 : loaded.offhandShieldSize));
                 loaded.offhandTotemSize = Math.max(10, Math.min(150, loaded.offhandTotemSize == 0 ? 100 : loaded.offhandTotemSize));
+                loaded.totemPopSize = Math.max(10, Math.min(150, loaded.totemPopSize == 0 ? 100 : loaded.totemPopSize));
                 if (loaded.crosshair == null) {
                     loaded.crosshair = new dev.macepvpessentials.crosshair.CrosshairSettings();
                 }
