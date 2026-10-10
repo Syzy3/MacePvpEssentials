@@ -30,15 +30,15 @@ public final class SettingsScreen extends Screen {
     private static final int BUTTON_WIDTH = 200;
     private static final int SECTION_WIDTH = 260;
     private static final int VISUALS_TOP = 40;
-    private static final int MACE_SLOTS_TOP = 184;
-    private static final int CROSSHAIR_TOP = 232;
-    private static final int OPTIMIZATION_TOP = 304;
+    private static final int MACE_SLOTS_TOP = 208;
+    private static final int CROSSHAIR_TOP = 256;
+    private static final int OPTIMIZATION_TOP = 328;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 30;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 420;
+    private static final int CONTENT_BOTTOM = 444;
     private static final int SCROLL_STEP = 16;
 
     private final Screen parent;
@@ -193,6 +193,12 @@ public final class SettingsScreen extends Screen {
                 v -> Minecraft.getInstance().options.damageTiltStrength().set(v / 100.0));
         damageTilt.setTooltip(Tooltip.create(Component.literal("How much the screen shakes\nwhen you get hurt.")));
         addScrolled(damageTilt);
+
+        Button offhand = Button.builder(Component.literal("Offhand Size..."),
+                b -> Minecraft.getInstance().gui.setScreen(new OffhandSizeScreen(this)))
+                .bounds(this.width / 2 - BUTTON_WIDTH / 2, VISUALS_TOP + 136, BUTTON_WIDTH, 20).build();
+        offhand.setTooltip(Tooltip.create(Component.literal("Sizes of a shield and a totem\nin your offhand.")));
+        addScrolled(offhand);
 
         addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
                 .bounds(this.width / 2 - 100, this.height - 28, 200, 20).build());

@@ -25,6 +25,9 @@ public final class Config {
     public boolean shieldStatus = true;
     /** Particles: None (Minecraft's option stays on Minimal). */
     public boolean particlesNone = false;
+    /** Offhand Size, in percent (first person). */
+    public int offhandShieldSize = 100;
+    public int offhandTotemSize = 100;
     /** Game Optimization (both off by default). */
     public boolean maceOptimization = false;
     public boolean pearlOptimization = false;
@@ -98,6 +101,8 @@ public final class Config {
                 if (loaded.totemColor == null) {
                     loaded.totemColor = SlotColor.GREEN;
                 }
+                loaded.offhandShieldSize = Math.max(10, Math.min(150, loaded.offhandShieldSize == 0 ? 100 : loaded.offhandShieldSize));
+                loaded.offhandTotemSize = Math.max(10, Math.min(150, loaded.offhandTotemSize == 0 ? 100 : loaded.offhandTotemSize));
                 if (loaded.crosshair == null) {
                     loaded.crosshair = new dev.macepvpessentials.crosshair.CrosshairSettings();
                 }
