@@ -48,6 +48,11 @@ public final class OffhandSizeScreen extends Screen {
                 v -> v + "%", v -> c.offhandTotemSize = v));
         this.addRenderableWidget(new IntSlider(x + 2 * (BOX_W + GAP), y, SLIDER_W, 20, "Pop", 10, 150, c.totemPopSize,
                 v -> v + "%", v -> c.totemPopSize = v));
+        // A little play button in the corner of the Totem Pop preview.
+        Button play = Button.builder(Component.literal("\u25B6"), b -> playPop())
+                .bounds(x + 2 * (BOX_W + GAP) + BOX_W - 18, TOP + 2, 16, 16).build();
+        play.setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.literal("Play the totem pop.")));
+        this.addRenderableWidget(play);
         this.addRenderableWidget(Button.builder(Component.literal("Reset"), b -> {
             c.offhandShieldSize = 100;
             c.offhandTotemSize = 100;
@@ -61,13 +66,14 @@ public final class OffhandSizeScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(graphics, mouseX, mouseY, delta);
-        graphics.centeredText(this.font, this.title, this.width / 2, 12, -1);
+        // Previews first, so the play button is drawn on top of its box.
         Config c = Config.get();
         int x = left();
         drawBox(graphics, x, "Shield", c.offhandShieldSize, true);
         drawBox(graphics, x + BOX_W + GAP, "Totem", c.offhandTotemSize, false);
         drawPop(graphics, x + 2 * (BOX_W + GAP), c.totemPopSize);
+        super.extractRenderState(graphics, mouseX, mouseY, delta);
+        graphics.centeredText(this.font, this.title, this.width / 2, 12, -1);
         graphics.centeredText(this.font, "The faint copy shows the normal size.", this.width / 2,
                 TOP + BOX_H + 18 + 26, 0xFF808080);
     }
@@ -106,15 +112,75 @@ public final class OffhandSizeScreen extends Screen {
         }
     }
 
-    /** Each loop: 2 seconds of pop (40 ticks, like the game) and a short pause. */
-    private static final long POP_LOOP_MS = 2600L;
-    private long popLoop = -1;
+    /** Pop playback: start time (-1 = not playing), random drift, and the particles. */
+    private long popStart = -1;
+    private int popTicksDone;
     private float popOffX;
     private float popOffY;
+    private final java.util.List<float[]> particles = new java.util.ArrayList<>();
+    private final java.util.Random random = new java.util.Random();
+
+    private static final Identifier[] GLITTER = new Identifier[8];
+    static {
+        for (int i = 0; i < 8; i++) {
+            GLITTER[i] = Identifier.withDefaultNamespace("textures/particle/glitter_" + i + ".png");
+        }
+    }
+
+    /** Starts one pop in the preview, with the real totem sound. */
+    private void playPop() {
+        popStart = System.currentTimeMillis();
+        popTicksDone = 0;
+        popOffX = random.nextFloat() * 2.0F - 1.0F;
+        popOffY = random.nextFloat() * 2.0F - 1.0F;
+        particles.clear();
+        Minecraft.getInstance().getSoundManager().play(
+                net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.TOTEM_USE, 1.0F));
+    }
 
     /**
-     * The totem pop, playing over and over. Same math as Minecraft's: the totem flies toward the
-     * screen, spins and drifts off to a random side, then shrinks away. Box = a small screen.
+     * One game tick of the pop's particles, like Minecraft's: for 30 ticks a burst of green and
+     * yellow sparkles comes off you; they slow down fast, then drift down and fade (60-72 ticks).
+     * Each particle: x, y, dx, dy, age, lifetime, r, g, b.
+     */
+    private void tickParticles(int x, int y) {
+        if (popTicksDone < 30) {
+            for (int i = 0; i < 16; i++) {
+                // Around you: mostly the lower part of the view, spread side to side.
+                float px = x + random.nextFloat() * BOX_W;
+                float py = y + BOX_H * (0.35F + random.nextFloat() * 0.65F);
+                float dx = (random.nextFloat() * 2.0F - 1.0F) * 7.0F;
+                float dy = (random.nextFloat() * 2.0F - 1.0F) * 7.0F - 2.0F;
+                float r, g, b;
+                if (random.nextInt(4) == 0) {
+                    r = 0.6F + random.nextFloat() * 0.2F; g = 0.6F + random.nextFloat() * 0.3F; b = random.nextFloat() * 0.2F;
+                } else {
+                    r = 0.1F + random.nextFloat() * 0.2F; g = 0.4F + random.nextFloat() * 0.3F; b = random.nextFloat() * 0.2F;
+                }
+                particles.add(new float[]{px, py, dx, dy, 0, 60 + random.nextInt(12), r, g, b});
+            }
+        }
+        java.util.Iterator<float[]> it = particles.iterator();
+        while (it.hasNext()) {
+            float[] p = it.next();
+            p[4]++;
+            if (p[4] >= p[5]) {
+                it.remove();
+                continue;
+            }
+            p[3] += 0.25F;
+            p[0] += p[2];
+            p[1] += p[3];
+            p[2] *= 0.6F;
+            p[3] *= 0.6F;
+        }
+        popTicksDone++;
+    }
+
+    /**
+     * The totem pop. Same math as Minecraft's: the totem flies toward the screen, spins and drifts
+     * off to a random side, then shrinks away, with the sparkles and the totem sound.
+     * Press the play button to play it. The box is a small screen.
      */
     private void drawPop(GuiGraphicsExtractor graphics, int x, int sizePercent) {
         int y = TOP;
@@ -122,16 +188,26 @@ public final class OffhandSizeScreen extends Screen {
         graphics.enableScissor(x, y, x + BOX_W, y + BOX_H);
         PreviewScene.vanillaCrosshair(graphics, x + BOX_W / 2, y + BOX_H / 2);
 
-        long now = System.currentTimeMillis();
-        long loop = now / POP_LOOP_MS;
-        if (loop != popLoop) {
-            // A new pop: random drift, like the game.
-            popLoop = loop;
-            java.util.Random random = new java.util.Random(loop * 31 + 7);
-            popOffX = random.nextFloat() * 2.0F - 1.0F;
-            popOffY = random.nextFloat() * 2.0F - 1.0F;
+        if (popStart < 0) {
+            graphics.disableScissor();
+            graphics.centeredText(this.font, "Press \u25B6", x + BOX_W / 2, y + BOX_H / 2 + 14, 0xFFFFFFFF);
+            graphics.centeredText(this.font, "Totem Pop", x + BOX_W / 2, y + BOX_H + 5, 0xFFA0A0A0);
+            return;
         }
-        float ticks = (now % POP_LOOP_MS) / 50.0F;
+        float ticks = (System.currentTimeMillis() - popStart) / 50.0F;
+        while (popTicksDone < (int) ticks) {
+            tickParticles(x, y);
+        }
+
+        // Sparkles behind the totem, like in game.
+        for (float[] p : particles) {
+            int frame = Math.min(7, (int) (p[4] * 8 / p[5]));
+            int alpha = 255;
+            int color = alpha << 24 | (int) (p[6] * 255) << 16 | (int) (p[7] * 255) << 8 | (int) (p[8] * 255);
+            graphics.blit(RenderPipelines.GUI_TEXTURED, GLITTER[7 - frame], (int) p[0] - 2, (int) p[1] - 2,
+                    0.0F, 0.0F, 4, 4, 8, 8, 8, 8, color);
+        }
+
         if (ticks < 40.0F) {
             float t = ticks / 40.0F;
             float ts = t * t;
@@ -140,9 +216,8 @@ public final class OffhandSizeScreen extends Screen {
             float pi = smooth * (float) Math.PI;
             // Distance from the camera (-10 + 9 sin), 70 degree view: tan(35) ~ 0.7.
             float depth = Math.max(0.5F, 10.0F - 9.0F * (float) Math.sin(pi));
-            float aspect = (float) BOX_W / BOX_H;
             float drift = Math.abs((float) Math.sin(pi * 2.0F));
-            float ndcX = popOffX * 0.3F * aspect * drift / (depth * 0.7F * aspect);
+            float ndcX = popOffX * 0.3F * drift / (depth * 0.7F);
             float ndcY = popOffY * 0.3F * drift / (depth * 0.7F);
             float px = x + BOX_W / 2.0F + ndcX * BOX_W / 2.0F;
             float py = y + BOX_H / 2.0F - ndcY * BOX_H / 2.0F;
@@ -156,6 +231,8 @@ public final class OffhandSizeScreen extends Screen {
             graphics.pose().scale(sizePx / 16.0F * (float) Math.cos(spin), sizePx / 16.0F);
             graphics.blit(RenderPipelines.GUI_TEXTURED, TOTEM, -8, -8, 0.0F, 0.0F, 16, 16, 16, 16, 16, 16);
             graphics.pose().popMatrix();
+        } else if (particles.isEmpty()) {
+            popStart = -1;
         }
         graphics.disableScissor();
         graphics.centeredText(this.font, "Totem Pop", x + BOX_W / 2, y + BOX_H + 5, 0xFFA0A0A0);
