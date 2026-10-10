@@ -316,7 +316,7 @@ public final class SettingsScreen extends Screen {
         Config c = Config.get();
         if (rightClicked(event, totemButton)) {
             Minecraft.getInstance().gui.setScreen(new ColorPickerScreen(this, "Totem Background",
-                    c.totemRgb(), c.totemCustom ? c.totemOpacity : 100, (rgb, opacity) -> {
+                    c.totemRgb(), c.totemOpacity, (rgb, opacity) -> {
                         c.totemCustomRgb = rgb;
                         c.totemOpacity = opacity;
                         c.totemCustom = true;
@@ -326,7 +326,7 @@ public final class SettingsScreen extends Screen {
         }
         if (rightClicked(event, breachButton)) {
             Minecraft.getInstance().gui.setScreen(new ColorPickerScreen(this, "Breach Mace Color",
-                    c.breachCustom ? c.breachCustomRgb : c.breachColor.rgb(), c.breachCustom ? c.breachOpacity : 100,
+                    c.breachCustom ? c.breachCustomRgb : c.breachColor.rgb(), c.breachOpacity,
                     (rgb, opacity) -> {
                         c.breachCustomRgb = rgb;
                         c.breachOpacity = opacity;
@@ -336,7 +336,7 @@ public final class SettingsScreen extends Screen {
         }
         if (rightClicked(event, densityButton)) {
             Minecraft.getInstance().gui.setScreen(new ColorPickerScreen(this, "Density Mace Color",
-                    c.densityCustom ? c.densityCustomRgb : c.densityColor.rgb(), c.densityCustom ? c.densityOpacity : 100,
+                    c.densityCustom ? c.densityCustomRgb : c.densityColor.rgb(), c.densityOpacity,
                     (rgb, opacity) -> {
                         c.densityCustomRgb = rgb;
                         c.densityOpacity = opacity;

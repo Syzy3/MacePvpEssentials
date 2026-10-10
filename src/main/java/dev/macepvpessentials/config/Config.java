@@ -56,7 +56,7 @@ public final class Config {
         if (!totemBackground) {
             return 0;
         }
-        return totemCustom ? withOpacity(totemCustomRgb, totemOpacity) : totemColor.slotColor();
+        return withOpacity(totemRgb(), totemOpacity);
     }
 
     /** The totem background color without transparency, for labels. */
@@ -65,11 +65,11 @@ public final class Config {
     }
 
     public int breachSlotColor() {
-        return breachCustom ? withOpacity(breachCustomRgb, breachOpacity) : breachColor.slotColor();
+        return withOpacity(breachCustom ? breachCustomRgb : breachColor.rgb(), breachOpacity);
     }
 
     public int densitySlotColor() {
-        return densityCustom ? withOpacity(densityCustomRgb, densityOpacity) : densityColor.slotColor();
+        return withOpacity(densityCustom ? densityCustomRgb : densityColor.rgb(), densityOpacity);
     }
 
     /** {@code rgb} as a slot fill at {@code opacity} percent. */
