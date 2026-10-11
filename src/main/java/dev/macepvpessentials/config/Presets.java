@@ -73,6 +73,10 @@ public final class Presets {
         c.windChargeOptimization = true;
         c.rocketOptimization = true;
         c.opponentDelay = OpponentDelay.VANILLA;
+        c.combatFps = true;
+
+        // Smash Damage
+        c.smashMode = SmashMode.OFF;
         Config.save();
 
         // Minecraft's own options: Hitboxes (Elytra only), Particles None, Damage Tilt 1%.
