@@ -1,9 +1,12 @@
 package dev.macepvpessentials.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.macepvpessentials.Hitboxes;
+import dev.macepvpessentials.MaceKeys;
 import dev.macepvpessentials.config.Config;
 import dev.macepvpessentials.config.HitboxMode;
 import dev.macepvpessentials.config.SlotColor;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -34,14 +37,21 @@ public final class SettingsScreen extends Screen {
     private static final int SMASH_TOP = 268;
     private static final int CROSSHAIR_TOP = 340;
     private static final int OPTIMIZATION_TOP = 412;
-    private static final int PRESETS_TOP = 606;
+    private static final int CONTROLS_TOP = 606;
+    private static final int PRESETS_TOP = 654;
     private static final int HALF_WIDTH = 122;
 
     /** The settings scroll between the title and the Done button. */
     private static final int LIST_TOP = 44;
     private static final int LIST_BOTTOM_MARGIN = 34;
-    private static final int CONTENT_BOTTOM = 650;
+    private static final int CONTENT_BOTTOM = 698;
     private static final int SCROLL_STEP = 16;
+
+    /** GLFW key code range worth scanning while listening for a new binding. */
+    private static final int FIRST_KEY = 32;
+    private static final int LAST_KEY = 348;
+    private static final int KEY_ESCAPE = 256;
+    private static final int KEY_BACKSPACE = 259;
 
     private final Screen parent;
 
@@ -52,6 +62,10 @@ public final class SettingsScreen extends Screen {
     private Button totemButton;
     private Button breachButton;
     private Button densityButton;
+    private Button keyBindButton;
+
+    /** Set while waiting for the player to press the key they want. */
+    private KeyMapping listening;
 
     /** The Hitboxes choice on screen; read on open so the F3+F6 option is reflected. */
     private HitboxMode hitboxes;
@@ -80,6 +94,7 @@ public final class SettingsScreen extends Screen {
     protected void init() {
         scrolled.clear();
         baseY.clear();
+        listening = null;
         if (hitboxes == null) {
             hitboxes = Hitboxes.current();
         }
@@ -267,6 +282,17 @@ public final class SettingsScreen extends Screen {
             }
         }
 
+        // Controls: the key that opens this screen. Added after the grey-out above on purpose —
+        // it's the same binding as Options > Controls, and you may want it back with the mod off.
+        keyBindButton = Button.builder(keyLabel(), b -> {
+            listening = MaceKeys.OPEN_SETTINGS;
+            b.setMessage(keyLabel());
+        }).bounds(this.width / 2 - BUTTON_WIDTH / 2, CONTROLS_TOP + 16, BUTTON_WIDTH, 20).build();
+        // Two short lines like the other tooltips: a longer line wraps and looks ragged.
+        keyBindButton.setTooltip(Tooltip.create(Component.literal(
+                "Click, then press a key.\nBackspace clears it.")));
+        addScrolled(keyBindButton);
+
         // The mod on/off switch, under the title.
         ToggleSwitch modSwitch = new ToggleSwitch(this.width / 2 - ToggleSwitch.width() / 2, 26, Config::on, b -> {
             Config.get().enabled = !Config.get().enabled;
@@ -284,12 +310,56 @@ public final class SettingsScreen extends Screen {
         setScroll(scroll);
     }
 
-    /** A yes/no confirm screen. For now both answers just come back here (the presets aren't set up yet). */
-    private void confirm(String title, String message, String yes) {
-        confirm(title, message, yes, null);
+    /** "Open key: K", or "..." while waiting for the player to press one. */
+    private Component keyLabel() {
+        String shown = listening != null
+                ? "..."
+                : MaceKeys.OPEN_SETTINGS.getTranslatedKeyMessage().getString();
+        return Component.literal("Open key: " + shown);
     }
 
-    /** A yes/no confirm screen; {@code onYes} runs on yes (null = nothing yet). */
+    /**
+     * Watches the raw keyboard while listening for a new binding.
+     *
+     * <p>Polling the key state each frame instead of overriding {@code keyPressed} is deliberate:
+     * the key-event signature changed in 26.x along with the mouse one, and polling reads the same
+     * GLFW state without depending on it. Escape cancels; Backspace clears the binding.
+     */
+    private void pollForNewKey() {
+        var window = Minecraft.getInstance().getWindow();
+
+        if (InputConstants.isKeyDown(window, KEY_ESCAPE)) {
+            listening = null;
+            keyBindButton.setMessage(keyLabel());
+            return;
+        }
+        if (InputConstants.isKeyDown(window, KEY_BACKSPACE)) {
+            bind(InputConstants.UNKNOWN);
+            return;
+        }
+
+        for (int code = FIRST_KEY; code <= LAST_KEY; code++) {
+            if (InputConstants.isKeyDown(window, code)) {
+                bind(InputConstants.Type.KEYSYM.getOrCreate(code));
+                return;
+            }
+        }
+    }
+
+    /**
+     * Sets the key on Minecraft's own binding, exactly as the Controls screen does, and saves
+     * options.txt. There is no separate copy in the mod's config to fall out of step, so Cancel
+     * does not undo it.
+     */
+    private void bind(InputConstants.Key key) {
+        listening.setKey(key);
+        KeyMapping.resetMapping();
+        Minecraft.getInstance().options.save();
+        listening = null;
+        keyBindButton.setMessage(keyLabel());
+    }
+
+    /** A yes/no confirm screen; {@code onYes} runs if the player says yes. Either answer comes back here. */
     private void confirm(String title, String message, String yes, Runnable onYes) {
         Minecraft.getInstance().gui.setScreen(new CancelLeftConfirmScreen(answer -> {
             if (answer && onYes != null) {
@@ -486,6 +556,7 @@ public final class SettingsScreen extends Screen {
         section(graphics, "Smash Damage", SMASH_TOP - offset);
         section(graphics, "Crosshair", CROSSHAIR_TOP - offset);
         section(graphics, "Game Optimization", OPTIMIZATION_TOP - offset);
+        section(graphics, "Controls", CONTROLS_TOP - offset);
         section(graphics, "Presets", PRESETS_TOP - offset);
         graphics.centeredText(this.font, "Best off when you're not PvPing: they",
                 this.width / 2, OPTIMIZATION_TOP + 13 - offset, 0xFF909090);
@@ -504,6 +575,10 @@ public final class SettingsScreen extends Screen {
             int y = LIST_TOP + (int) ((track - thumb) * (scroll / maxScroll()));
             graphics.fill(x, LIST_TOP, x + 4, listBottom(), 0x80000000);
             graphics.fill(x, y, x + 4, y + thumb, 0xFFA0A0A0);
+        }
+
+        if (listening != null) {
+            pollForNewKey();
         }
     }
 
@@ -529,6 +604,12 @@ public final class SettingsScreen extends Screen {
 
     @Override
     public void onClose() {
+        if (listening != null) {
+            // Escape while choosing a key cancels the choice instead of leaving the screen.
+            listening = null;
+            keyBindButton.setMessage(keyLabel());
+            return;
+        }
         Config.save();
         Minecraft.getInstance().options.save();
         Minecraft.getInstance().gui.setScreen(parent);

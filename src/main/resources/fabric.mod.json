@@ -8,7 +8,7 @@
     "Syzy3"
   ],
   "contact": {
-    "homepage": "https://modrinth.com/organization/kinetic"
+    "homepage": "https://modrinth.com/mod/macepvpessentials"
   },
   "license": "All Rights Reserved",
   "environment": "client",
@@ -34,6 +34,11 @@
     "modmenu": "*"
   },
   "custom": {
+    "modmenu": {
+      "links": {
+        "mace-pvp-essentials.modmenu.releases": "https://github.com/Syzy3/MacePvpEssentials/releases"
+      }
+    },
     "kinetic": {
       "settings": "dev.macepvpessentials.gui.SettingsScreen#open"
     }
