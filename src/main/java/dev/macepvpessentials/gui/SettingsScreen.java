@@ -137,7 +137,7 @@ public final class SettingsScreen extends Screen {
             b.setMessage(Component.literal("Smash Damage: " + Config.get().smashMode.label()));
             smashPosition.active = Config.get().smashMode != dev.macepvpessentials.config.SmashMode.OFF;
         }).bounds(this.width / 2 - BUTTON_WIDTH / 2, SMASH_TOP + 16, BUTTON_WIDTH, 20).build();
-        smash.setTooltip(Tooltip.create(Component.literal("Hearts your smash would deal.\nAlways: before you switch too.")));
+        smash.setTooltip(Tooltip.create(Component.literal("Hearts your smash would deal,\neven on elytra or before swap.")));
         addScrolled(smash);
         addScrolled(smashPosition);
 

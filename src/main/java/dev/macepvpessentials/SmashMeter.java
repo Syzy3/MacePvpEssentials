@@ -35,7 +35,10 @@ public final class SmashMeter {
         if (!holding) {
             held = anyMace ? bestHotbarMace(p) : ItemStack.EMPTY;
         }
-        if (held.isEmpty() || !MaceItem.canSmashAttack(p)) {
+        // While gliding, Minecraft won't smash, but the fall you've built up still counts the moment
+        // you swap the elytra off, so show that number too.
+        boolean canSmash = p.isFallFlying() ? p.fallDistance > 1.5 : MaceItem.canSmashAttack(p);
+        if (held.isEmpty() || !canSmash) {
             return -1;
         }
         double fall = p.fallDistance;
