@@ -41,7 +41,7 @@ public final class Config {
     /** Combat FPS: lighter video settings while on (your own settings are kept). */
     public boolean combatFps = false;
     /** Smash Damage meter next to the crosshair. */
-    public boolean smashMeter = false;
+    public SmashMode smashMode = SmashMode.OFF;
     public SmashPosition smashMeterPosition = SmashPosition.BELOW;
     /** Colored background behind Totems of Undying (off by default). */
     public boolean totemBackground = false;
@@ -139,6 +139,9 @@ public final class Config {
                 loaded.offhandShieldSize = Math.max(10, Math.min(150, loaded.offhandShieldSize == 0 ? 100 : loaded.offhandShieldSize));
                 loaded.offhandTotemSize = Math.max(10, Math.min(150, loaded.offhandTotemSize == 0 ? 100 : loaded.offhandTotemSize));
                 loaded.totemPopSize = Math.max(10, Math.min(150, loaded.totemPopSize == 0 ? 100 : loaded.totemPopSize));
+                if (loaded.smashMode == null) {
+                    loaded.smashMode = SmashMode.OFF;
+                }
                 if (loaded.smashMeterPosition == null) {
                     loaded.smashMeterPosition = SmashPosition.BELOW;
                 }

@@ -24,40 +24,71 @@ public final class SmashMeter {
     private SmashMeter() {
     }
 
-    /** Damage (in health points) a smash would deal right now, or -1 when you can't smash. */
-    public static double damage(LocalPlayer p) {
+    /**
+     * Damage (in health points) a smash would deal right now, or -1 when you can't smash. With
+     * {@code anyMace}, a mace in your hotbar counts too: that's the damage if you switched to it
+     * now (switching resets your attack charge, so no critical hit and weaker base damage).
+     */
+    public static double damage(LocalPlayer p, boolean anyMace) {
         ItemStack held = p.getMainHandItem();
-        if (!held.is(Items.MACE) || !MaceItem.canSmashAttack(p)) {
+        boolean holding = held.is(Items.MACE);
+        if (!holding) {
+            held = anyMace ? bestHotbarMace(p) : ItemStack.EMPTY;
+        }
+        if (held.isEmpty() || !MaceItem.canSmashAttack(p)) {
             return -1;
         }
         double fall = p.fallDistance;
         double smash = fall <= 3.0 ? 4.0 * fall : fall <= 8.0 ? 12.0 + 2.0 * (fall - 3.0) : 22.0 + fall - 8.0;
-        int density = 0;
-        for (Object2IntMap.Entry<Holder<Enchantment>> e : held.getEnchantments().entrySet()) {
-            if (e.getKey().is(Enchantments.DENSITY)) {
-                density = e.getIntValue();
-            }
-        }
+        int density = densityLevel(held);
         // Density: +0.5 damage per level for every block fallen.
         smash += 0.5 * density * fall;
 
-        float charge = p.getAttackStrengthScale(0.5F);
-        double base = p.getAttributeValue(Attributes.ATTACK_DAMAGE) * (0.2F + charge * charge * 0.8F);
+        float charge = holding ? p.getAttackStrengthScale(0.5F) : 0.0F;
+        // Not holding it yet: a mace hits for 6 (your 1 + the mace's 5).
+        double attack = holding ? p.getAttributeValue(Attributes.ATTACK_DAMAGE) : 6.0;
+        double base = attack * (0.2F + charge * charge * 0.8F);
         boolean crit = charge > 0.9F && !p.onGround() && !p.onClimbable() && !p.isInWater()
                 && !p.hasEffect(MobEffects.BLINDNESS) && !p.isPassenger() && !p.isSprinting();
         return (base + smash) * (crit ? 1.5 : 1.0);
     }
 
+    private static int densityLevel(ItemStack stack) {
+        for (Object2IntMap.Entry<Holder<Enchantment>> e : stack.getEnchantments().entrySet()) {
+            if (e.getKey().is(Enchantments.DENSITY)) {
+                return e.getIntValue();
+            }
+        }
+        return 0;
+    }
+
+    /** The mace in your hotbar with the most Density (any mace if none has it), or empty. */
+    private static ItemStack bestHotbarMace(LocalPlayer p) {
+        ItemStack best = ItemStack.EMPTY;
+        int bestDensity = -1;
+        for (int i = 0; i < 9; i++) {
+            ItemStack stack = p.getInventory().getItem(i);
+            if (stack.is(Items.MACE)) {
+                int d = densityLevel(stack);
+                if (d > bestDensity) {
+                    best = stack;
+                    bestDensity = d;
+                }
+            }
+        }
+        return best;
+    }
+
     /** Draws the number next to the crosshair at (cx, cy). */
     public static void draw(GuiGraphicsExtractor g, int cx, int cy) {
-        if (!Config.on() || !Config.get().smashMeter) {
+        if (!Config.on() || Config.get().smashMode == dev.macepvpessentials.config.SmashMode.OFF) {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) {
             return;
         }
-        double dmg = damage(mc.player);
+        double dmg = damage(mc.player, Config.get().smashMode == dev.macepvpessentials.config.SmashMode.ALWAYS);
         if (dmg < 0) {
             return;
         }
